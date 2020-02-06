@@ -1,0 +1,26 @@
+#viewport {
+  transform: scale(1);
+  transform-origin: top left;
+  position: relative;
+}
+
+
+
+.dropzone {
+  width: 200px;
+  height: 20px;
+  background: blueviolet;
+  margin-bottom: 10px;
+  padding: 10px;
+  
+}
+
+
+.dropzone:last-child {
+  position: absolute;
+  top: 400px;
+  left: 800px
+  
+}
+
+/*# sourceMappingURL=/style.e308ff8e.css.map */
