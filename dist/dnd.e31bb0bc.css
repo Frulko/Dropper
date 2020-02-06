@@ -12,6 +12,7 @@
 
 .node {
   width: 120px;
+  padding: 10px;
   height: 100px;
   text-align: center;
   background: white;
@@ -25,6 +26,11 @@
   border-color: tomato;
   outline: none;
 }
+.node input {
+  margin-top: 10px;
+  width: 100%;
+  border: 1px solid black;
+}
 
 .node--selected {
   background-color: dodgerblue;
@@ -36,6 +42,7 @@
 *, body {
   font-size: 16px;
   overscroll-behavior: none;
+  box-sizing: border-box;
 }
 
 .App {

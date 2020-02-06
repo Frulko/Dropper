@@ -13,6 +13,7 @@
 
 .node {
   width: 120px;
+  padding: 10px;
   height: 100px;
   text-align: center;
   background: white;
@@ -24,6 +25,12 @@
   &:focus{
     border-color: tomato;
     outline: none;
+  }
+  
+  input{
+    margin-top: 10px;
+    width: 100%;
+    border: 1px solid black;
   }
 }
 

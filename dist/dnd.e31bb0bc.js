@@ -31738,14 +31738,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -31753,6 +31745,14 @@ function _nonIterableRest() { throw new TypeError("Invalid attempt to destructur
 function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -31809,7 +31809,7 @@ function () {
     this.isNode = null;
     this.selectedNodes = [];
     this.unselectedNodes = [];
-    this.draggingBoard = false;
+    this.draggingBoard = true;
     console.log("--> constructor");
     var img = document.createElement("img");
     img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -32044,30 +32044,6 @@ function () {
 
       if (nodeElement) {
         this.dragged = nodeElement;
-        var isNotInSelection = true;
-        var index = -1;
-
-        for (var selectedNodeIndex in this.selectedNodes) {
-          console.log('->ok', nodeElement.getAttribute('data-node'), this.selectedNodes[selectedNodeIndex].getAttribute('data-node'));
-          var test = !nodeElement.isEqualNode(this.selectedNodes[selectedNodeIndex]);
-
-          if (test) {
-            index = selectedNodeIndex;
-          }
-
-          isNotInSelection &= test;
-        }
-
-        if (isNotInSelection) {
-          this.selectedNodes.push(nodeElement);
-        } else {
-          // console.log('>> is at index:', index);
-          var _this$selectedNodes$s = this.selectedNodes.splice(index, 1),
-              _this$selectedNodes$s2 = _slicedToArray(_this$selectedNodes$s, 1),
-              toUnselectNode = _this$selectedNodes$s2[0];
-
-          this.unselectedNodes.push(toUnselectNode);
-        }
 
         var _this$dragged$getBoun = this.dragged.getBoundingClientRect(),
             x = _this$dragged$getBoun.x,
@@ -32077,11 +32053,14 @@ function () {
         this.originalPosition = [x, y];
         dragObject.node = true;
         dragObject.target = nodeElement;
-        this.isNode = true; // this.updateDOMTranslate(event);
+        this.isNode = true;
+        this.updateDOMTranslate(event);
       }
 
-      var evt = this.updateEventObject(dragObject, event);
-      this.onStart(); // this.onDragHandler.call(this, evt);
+      var evt = this.updateEventObject(dragObject, event); // build a correct object
+
+      this.onStart(); // used for scaling --> refactoring to delete it
+      // this.onDragHandler.call(this, evt); // dispatch to the down click event
     }
   }, {
     key: "handleMouseUp",
@@ -32180,14 +32159,16 @@ function () {
       for (var i = 0, l = this.selectedNodes.length; i < l; i += 1) {
         var dragged = this.selectedNodes[i]; // dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
       }
+
+      this.dragged.style.transform = "translate3d(".concat(posX, "px, ").concat(posY, "px, 0px)");
     }
   }, {
     key: "getPosition",
     value: function getPosition(x, y) {
-      var newX = x - this.origin[0];
-      var newY = y - this.origin[1];
-      var posX = getPosByScale(newX - this.draggedClickPositionOffset[0], this.scaleFactor);
-      var posY = getPosByScale(newY - this.draggedClickPositionOffset[1], this.scaleFactor);
+      var newX = x - this.transform.x;
+      var newY = y - this.transform.y;
+      var posX = getPosByScale(newX - this.draggedClickPositionOffset[0], this.transform.k);
+      var posY = getPosByScale(newY - this.draggedClickPositionOffset[1], this.transform.k);
       return [posX, posY];
     }
   }, {

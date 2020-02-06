@@ -37,7 +37,7 @@ export default class DragNDrop {
     this.unselectedNodes = [];
     
 
-    this.draggingBoard = false;
+    this.draggingBoard = true;
 
     console.log("--> constructor");
 
@@ -337,29 +337,6 @@ export default class DragNDrop {
     const nodeElement = this.checkIsNode(event.target);
     if (nodeElement) {
       this.dragged = nodeElement;
-
-      
-      let isNotInSelection = true;
-      let index = -1;
-      for(let selectedNodeIndex in this.selectedNodes) {
-        console.log('->ok', nodeElement.getAttribute('data-node'), this.selectedNodes[selectedNodeIndex].getAttribute('data-node'));
-        const test = !(nodeElement.isEqualNode(this.selectedNodes[selectedNodeIndex]));
-
-        if (test) {
-          index = selectedNodeIndex;
-        }
-
-        isNotInSelection &= test;
-      }
-
-      if (isNotInSelection) {
-        this.selectedNodes.push(nodeElement)
-      } else {
-        // console.log('>> is at index:', index);
-        const [toUnselectNode] = this.selectedNodes.splice(index, 1);
-        this.unselectedNodes.push(toUnselectNode);
-      }
-      
       const { x, y } = this.dragged.getBoundingClientRect();
       this.draggedClickPositionOffset = [event.x - x, event.y - y];
       this.originalPosition = [x, y];
@@ -367,13 +344,13 @@ export default class DragNDrop {
       dragObject.node = true;
       dragObject.target = nodeElement;
       this.isNode = true;
-      // this.updateDOMTranslate(event);
+      this.updateDOMTranslate(event);
     }
 
-    const evt = this.updateEventObject(dragObject, event);
+    const evt = this.updateEventObject(dragObject, event); // build a correct object
 
-    this.onStart();
-    // this.onDragHandler.call(this, evt);
+    this.onStart(); // used for scaling --> refactoring to delete it
+    // this.onDragHandler.call(this, evt); // dispatch to the down click event
   }
 
   handleMouseUp(event) {
@@ -465,7 +442,6 @@ export default class DragNDrop {
     // Empêche default d'autoriser le drop
     event.preventDefault();
     this.isDragging = true;
-
     this.updateDOMTranslate(event);
     // console.log(getPosByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor));
     // const evt = this.updateEventObject({
@@ -483,19 +459,21 @@ export default class DragNDrop {
       const dragged = this.selectedNodes[i];
       // dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
     }
+
+    this.dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
   }
 
   getPosition(x, y) {
-    const newX = x - this.origin[0];
-    const newY = y - this.origin[1];
+    const newX = x - this.transform.x;
+    const newY = y - this.transform.y
 
     const posX = getPosByScale(
       newX - this.draggedClickPositionOffset[0],
-      this.scaleFactor
+      this.transform.k
     );
     const posY = getPosByScale(
       newY - this.draggedClickPositionOffset[1],
-      this.scaleFactor
+      this.transform.k
     );
 
     return [posX, posY];
