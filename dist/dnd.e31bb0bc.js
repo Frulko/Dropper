@@ -31822,8 +31822,8 @@ function () {
 
     this.onKeyHandler = function () {};
 
-    window.test = function (value) {
-      _this.changeScale(value);
+    window.fitToScreen = function (value) {
+      _this.fitToScreen();
     };
 
     this.update();
@@ -32212,7 +32212,59 @@ function () {
 
   }, {
     key: "fitToScreen",
-    value: function fitToScreen() {}
+    value: function fitToScreen() {
+      var els = document.querySelectorAll('[draggable="true"]');
+      var boundingBox = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      };
+
+      for (var i = 0, l = els.length; i < l; i += 1) {
+        var b = els[i].getBoundingClientRect();
+        var _rect = {
+          x: +els[i].getAttribute('data-x'),
+          y: +els[i].getAttribute('data-y'),
+          width: b.width * (1 / this.transform.k),
+          height: b.height * (1 / this.transform.k)
+        }; // console.log('w', rect.width, rect.width * (1/this.transform.k))
+
+        if (_rect.x > boundingBox.width) {
+          boundingBox.width = _rect.x + _rect.width;
+        }
+
+        if (_rect.y > boundingBox.height) {
+          boundingBox.height = _rect.y + _rect.height;
+        }
+
+        if (_rect.x < boundingBox.x) {
+          boundingBox.x = _rect.x;
+        }
+
+        if (_rect.y < boundingBox.y) {
+          boundingBox.y = _rect.y;
+        }
+      }
+
+      var rect = this.container.getBoundingClientRect();
+      var padding = 150;
+      var k = this.transform.k;
+
+      if (boundingBox.width < boundingBox.height) {
+        // if landscape mode
+        k = (rect.height - padding) / boundingBox.height;
+      } else {
+        k = (rect.width - padding) / boundingBox.width;
+      }
+
+      this.transform = {
+        k: k,
+        x: rect.width / 2 - boundingBox.width / 2 * k,
+        y: rect.height / 2 - boundingBox.height / 2 * k
+      };
+      this.update();
+    }
   }, {
     key: "setDraggingBoard",
     value: function setDraggingBoard(dragging) {
@@ -32372,6 +32424,7 @@ var _default = function _default(_ref3) {
   };
 
   var onKeyEventHandler = function onKeyEventHandler(state, evt) {
+    // console.log(evt.keyCode);
     if (state !== 'down') {
       isShifted = false;
       bind.ref.current.dragNDropInstance.setDraggingBoard(false);
@@ -32385,6 +32438,10 @@ var _default = function _default(_ref3) {
 
     if (evt.keyCode === 82 && state === 'down') {
       bind.ref.current.dragNDropInstance.reset();
+    }
+
+    if (evt.keyCode === 70 && state === 'down') {
+      bind.ref.current.dragNDropInstance.fitToScreen();
     }
   };
 
@@ -32665,6 +32722,8 @@ var _default = _react.default.forwardRef(function (props, ref) {
       'node--selected': isSelected
     }),
     "data-node": id,
+    "data-x": posX,
+    "data-y": posY,
     draggable: "true",
     style: {
       transform: "translate3d(".concat(posX, "px, ").concat(posY, "px, 0)")
@@ -32797,7 +32856,7 @@ var GraphNavigator = function GraphNavigator(props) {
       boardOrigin = _useState4[0],
       setBoardOrigin = _useState4[1];
 
-  var _useState5 = (0, _react.useState)(0.7),
+  var _useState5 = (0, _react.useState)(0.5),
       _useState6 = _slicedToArray(_useState5, 2),
       scaleFactor = _useState6[0],
       setScaleFactor = _useState6[1];
@@ -32900,8 +32959,8 @@ var fakeConnectable = [{
   name: '',
   description: '',
   color: null,
-  posX: 400,
-  posY: 400,
+  posX: 1000,
+  posY: 800,
   posZ: 260,
   outputLinks: [],
   inputLinks: [],

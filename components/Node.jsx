@@ -32,6 +32,8 @@ export default React.forwardRef((props, ref) => {
       <DeepDebugNode
         className={classNames('node', {'node--selected': isSelected})}
         data-node={id}
+        data-x={posX}
+        data-y={posY}
         draggable="true"
         style={{ transform: `translate3d(${posX}px, ${posY}px, 0)` }}
         tabIndex={tabIndex}

@@ -121,6 +121,7 @@ export default ({
 
 
   const onKeyEventHandler = (state, evt) => {
+    // console.log(evt.keyCode);
     if (state !== 'down') {
       isShifted = false;
       bind.ref.current.dragNDropInstance.setDraggingBoard(false);
@@ -135,6 +136,10 @@ export default ({
 
     if (evt.keyCode === 82 && state === 'down') {
       bind.ref.current.dragNDropInstance.reset();
+    }
+
+    if (evt.keyCode === 70 && state === 'down') {
+      bind.ref.current.dragNDropInstance.fitToScreen();
     }
   }
 

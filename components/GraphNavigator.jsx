@@ -7,7 +7,7 @@ const GraphNavigator = (props) => {
 
   const [connectables, setConnectables] = useState(props.connectables); 
   const [boardOrigin, setBoardOrigin] = useState([0, 0]); 
-  const [scaleFactor, setScaleFactor] = useState(0.7); 
+  const [scaleFactor, setScaleFactor] = useState(0.5); 
 
   let indexedConnectables = {};
 

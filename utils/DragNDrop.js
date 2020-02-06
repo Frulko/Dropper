@@ -56,8 +56,8 @@ export default class DragNDrop {
 
     this.onKeyHandler = () => {};
 
-    window.test = value => {
-      this.changeScale(value);
+    window.fitToScreen = value => {
+      this.fitToScreen();
     };
 
     this.update();
@@ -245,8 +245,6 @@ export default class DragNDrop {
       return;
     }
 
-
-    
     const d = (k - value) / (k - zoom || 1);
 
     this.transform.k = value;
@@ -293,7 +291,6 @@ export default class DragNDrop {
   }
 
   changeScale(value, zooming_center) {
-
     if (value < this.min_scale) {
       value = this.min_scale;
     } else if (value > this.max_scale) {
@@ -509,7 +506,62 @@ export default class DragNDrop {
 
   // TODO add dblclick to zoom
 
-  fitToScreen() {}
+  fitToScreen() {
+    const els = document.querySelectorAll('[draggable="true"]');
+
+    const boundingBox = {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0
+    }
+
+    for (let i = 0, l = els.length; i < l; i += 1) {
+      const b = els[i].getBoundingClientRect();
+      const rect = {
+        x: +els[i].getAttribute('data-x'),
+        y: +els[i].getAttribute('data-y'),
+        width: b.width * (1/this.transform.k),
+        height: b.height * (1/this.transform.k)
+      };
+
+      // console.log('w', rect.width, rect.width * (1/this.transform.k))
+
+      if (rect.x > boundingBox.width) {
+        boundingBox.width = rect.x + rect.width;
+      }
+
+      if (rect.y > boundingBox.height) {
+        boundingBox.height = rect.y + rect.height;
+      }
+
+      if (rect.x < boundingBox.x) {
+        boundingBox.x = rect.x;
+      }
+
+      if (rect.y < boundingBox.y) {
+        boundingBox.y = rect.y;
+      }
+    }
+
+
+    const rect = this.container.getBoundingClientRect();
+    const padding = 150;
+    let k = this.transform.k;
+    if (boundingBox.width < boundingBox.height) { // if landscape mode
+      k = (rect.height - padding) / (boundingBox.height);
+    } else {
+      k = (rect.width - padding) / (boundingBox.width);
+    }
+
+    this.transform = {
+      k,
+      x: rect.width/2 - ((boundingBox.width / 2) * (k) ), 
+      y: rect.height/2 - ((boundingBox.height / 2) * (k) ), 
+    }
+
+    this.update();
+  }
 
   setDraggingBoard(dragging) {
     this.draggingBoard = dragging;
