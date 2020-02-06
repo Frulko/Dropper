@@ -31938,8 +31938,20 @@ function () {
         zoom: _zoom,
         source: source
       };
-      var d = (k - params.zoom) / (k - _zoom || 1);
-      this.transform.k = params.zoom || 1;
+      var value = params.zoom || 1;
+
+      if (value < this.min_scale) {
+        value = this.min_scale;
+      } else if (value > this.max_scale) {
+        value = this.max_scale;
+      }
+
+      if (value == k) {
+        return;
+      }
+
+      var d = (k - value) / (k - _zoom || 1);
+      this.transform.k = value;
       this.transform.x += ox * d;
       this.transform.y += oy * d;
       this.update();
@@ -31988,8 +32000,6 @@ function () {
   }, {
     key: "changeScale",
     value: function changeScale(value, zooming_center) {
-      console.log("ok");
-
       if (value < this.min_scale) {
         value = this.min_scale;
       } else if (value > this.max_scale) {
@@ -32167,8 +32177,13 @@ function () {
     value: function getPosition(x, y) {
       var newX = x - this.transform.x;
       var newY = y - this.transform.y;
-      var posX = getPosByScale(newX - this.draggedClickPositionOffset[0], this.transform.k);
-      var posY = getPosByScale(newY - this.draggedClickPositionOffset[1], this.transform.k);
+
+      var _this$draggedClickPos = _slicedToArray(this.draggedClickPositionOffset, 2),
+          dposX = _this$draggedClickPos[0],
+          dposY = _this$draggedClickPos[1];
+
+      var posX = getPosByScale(newX - dposX, this.transform.k);
+      var posY = getPosByScale(newY - dposY, this.transform.k);
       return [posX, posY];
     }
   }, {

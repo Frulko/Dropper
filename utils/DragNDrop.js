@@ -22,20 +22,23 @@ export default class DragNDrop {
     this.min_scale = 0.1;
 
     this.el = opts.el;
-    
-    this.transform = { k: opts.scaleFactor, x: this.origin[0], y: this.origin[1] };
+
+    this.transform = {
+      k: opts.scaleFactor,
+      x: this.origin[0],
+      y: this.origin[1]
+    };
     this._startPosition = null;
 
     this.mouseDown = false;
     this.isDragging = false;
     this.posFirst = [0, 0];
     this.posLast = [0, 0];
-    
+
     this.isNode = null;
 
     this.selectedNodes = [];
     this.unselectedNodes = [];
-    
 
     this.draggingBoard = true;
 
@@ -194,8 +197,6 @@ export default class DragNDrop {
     );
   }
 
-
-
   handleMouseWheel(e) {
     e.preventDefault();
 
@@ -233,9 +234,22 @@ export default class DragNDrop {
     const k = this.transform.k;
     const params = { transform: this.transform, zoom, source };
 
-    const d = (k - params.zoom) / ((k - zoom) || 1);
+    let value = params.zoom || 1;
+    if (value < this.min_scale) {
+      value = this.min_scale;
+    } else if (value > this.max_scale) {
+      value = this.max_scale;
+    }
 
-    this.transform.k = params.zoom || 1;
+    if (value == k) {
+      return;
+    }
+
+
+    
+    const d = (k - value) / (k - zoom || 1);
+
+    this.transform.k = value;
     this.transform.x += ox * d;
     this.transform.y += oy * d;
 
@@ -279,7 +293,7 @@ export default class DragNDrop {
   }
 
   changeScale(value, zooming_center) {
-    console.log("ok");
+
     if (value < this.min_scale) {
       value = this.min_scale;
     } else if (value > this.max_scale) {
@@ -372,7 +386,7 @@ export default class DragNDrop {
             this.scaleFactor
         ],
         selection: [...this.selectedNodes],
-        unselection: [...this.unselectedNodes],
+        unselection: [...this.unselectedNodes]
       },
       event
     );
@@ -418,7 +432,6 @@ export default class DragNDrop {
       const d = this.getDeltaPosition(event.x, event.y);
       this.onTranslate(d[0], d[1]);
     }
-    
   }
 
   handleDragStartEvent(event) {
@@ -465,16 +478,12 @@ export default class DragNDrop {
 
   getPosition(x, y) {
     const newX = x - this.transform.x;
-    const newY = y - this.transform.y
+    const newY = y - this.transform.y;
 
-    const posX = getPosByScale(
-      newX - this.draggedClickPositionOffset[0],
-      this.transform.k
-    );
-    const posY = getPosByScale(
-      newY - this.draggedClickPositionOffset[1],
-      this.transform.k
-    );
+    const [dposX, dposY] = this.draggedClickPositionOffset;
+
+    const posX = getPosByScale(newX - dposX, this.transform.k);
+    const posY = getPosByScale(newY - dposY, this.transform.k);
 
     return [posX, posY];
   }
@@ -500,11 +509,8 @@ export default class DragNDrop {
 
   // TODO add dblclick to zoom
 
-  fitToScreen() {
+  fitToScreen() {}
 
-  }
-
-  
   setDraggingBoard(dragging) {
     this.draggingBoard = dragging;
   }
@@ -514,7 +520,7 @@ export default class DragNDrop {
       k: this.transform.k,
       x: 0,
       y: 0
-    }
+    };
 
     this.update();
   }
