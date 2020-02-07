@@ -37,3 +37,6 @@ src/i18n/messages/src/containers/Header/
 src/i18n/messages/src/pages/
 
 src/i18n/messages/src/containers/
+
+.cache
+dist

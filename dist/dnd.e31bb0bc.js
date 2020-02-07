@@ -31730,13 +31730,489 @@ if ("development" === 'production') {
 } else {
   module.exports = require('./cjs/react-dom.development.js');
 }
-},{"./cjs/react-dom.development.js":"node_modules/react-dom/cjs/react-dom.development.js"}],"utils/DragNDrop.js":[function(require,module,exports) {
+},{"./cjs/react-dom.development.js":"node_modules/react-dom/cjs/react-dom.development.js"}],"node_modules/vec-la/dist/vec.module.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+/**
+ * Adds two vectors
+ * @param {Vector} v
+ * @param {Vector} v2
+ * @returns {Vector}
+ */
+var vAdd = function vAdd(v, v2) {
+  return [v[0] + v2[0], v[1] + v2[1]];
+};
+
+/**
+ * Subtracts one vector from another
+ * @param {Vector} v
+ * @param {Vector} v2
+ * @returns {Vector}
+ */
+var vSub = function vSub(v, v2) {
+  return [v[0] - v2[0], v[1] - v2[1]];
+};
+
+/**
+ * Gets the magnitude of a vector
+ * @param {Vector} v
+ * @returns {Number}
+ */
+var vMag = function vMag(v) {
+  return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+};
+
+/**
+ * Gets the normal of a vector
+ * @param {Vector} v
+ * @returns {Vector}
+ */
+var vNormal = function vNormal(v) {
+  return [-v[1], v[0]];
+};
+
+/**
+ * Gets a point along the direction formed from v2 - v1.
+ * t represents a normalised percentage [0, 1] such that vTowards(v1, v2, 0) === v1 and vTowards(v1, v2, 1) === v2
+ * @param {Vector} v1
+ * @param {Vector} v2
+ * @param {Number} t
+ * @returns {Vector}
+ */
+var vTowards = function vTowards(v1, v2, t) {
+  var d = vSub(v2, v1);
+  var m = vMag(d);
+  return vAdd(v1, vScale(vNorm(d), t * m));
+};
+
+/**
+ * Gets a normalised vector
+ * @param {Vector} v
+ * @returns {Vector}
+ */
+var vNorm = function vNorm(v) {
+  var mag = vMag(v);
+  return [v[0] / mag, v[1] / mag];
+};
+
+/**
+ * Gets a scaled vector
+ * @param {Vector} v
+ * @param {Number} sc
+ * @returns {Vector}
+ */
+var vScale = function vScale(v, sc) {
+  return [v[0] * sc, v[1] * sc];
+};
+
+/**
+ * Creates an 2x3 Matrix
+ * @param {Number} a
+ * @param {Number} b
+ * @param {Number} c
+ * @param {Number} d
+ * @param {Number} tx
+ * @param {Number} ty
+ * @returns {Matrix}
+ */
+var vCreateMatrix = function vCreateMatrix() {
+  var a = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+  var b = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+  var c = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  var d = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+  var tx = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
+  var ty = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
+  return [a, c, tx, b, d, ty, 0, 0, 1];
+};
+
+/**
+ * Applys a matrix transformation to a vector
+ * @param {Vector} v
+ * @param {Matrix} m
+ * @returns {Vector}
+ */
+var vTransform = function vTransform(v, m) {
+  return [v[0] * m[0] + v[1] * m[1] + m[2], v[0] * m[3] + v[1] * m[4] + m[5]];
+};
+
+/**
+ * Functional: Curried vTransform
+ * @param {Vector} v
+ * @param {Matrix} m
+ * @returns {Vector}
+ */
+var vfTransform = function vfTransform(m) {
+  return function (v) {
+    return vTransform(v, m);
+  };
+};
+
+/**
+ * Compose two tranformations
+ * @param {Matrix} m
+ * @param {Matrix} m2
+ * @returns {Matrix}
+ */
+var vComposeTransform = function vComposeTransform(m, m2) {
+  return [m[0] * m2[0] + m[1] * m2[3] + m[2] * m2[6], m[0] * m2[1] + m[1] * m2[4] + m[2] * m2[7], m[0] * m2[2] + m[1] * m2[5] + m[2] * m2[8], m[3] * m2[0] + m[4] * m2[3] + m[5] * m2[6], m[3] * m2[1] + m[4] * m2[4] + m[5] * m2[7], m[3] * m2[2] + m[4] * m2[5] + m[5] * m2[8], m[6] * m2[0] + m[7] * m2[3] + m[8] * m2[6], m[6] * m2[1] + m[7] * m2[4] + m[8] * m2[7], m[6] * m2[2] + m[7] * m2[5] + m[8] * m2[8]];
+};
+
+/**
+ * Rotates a vector around the origin. Shorthand for a rotation matrix
+ * @param {Vector} v
+ * @param {Number} a
+ * @returns {Vector}
+ */
+var vRotate = function vRotate(v, a) {
+  return [v[0] * Math.cos(a) - v[1] * Math.sin(a), v[0] * Math.sin(a) + v[1] * Math.cos(a)];
+};
+
+/**
+ * Rotates a vector around a given point.
+ * @param {Vector} v
+ * @param {Vector} cp
+ * @param {Number} a
+ * @returns {Vector}
+ */
+var vRotatePointAround = function vRotatePointAround(v, cp, a) {
+  var v2 = vSub(v, cp);
+  return vAdd(cp, [v2[0] * Math.cos(a) - v2[1] * Math.sin(a), v2[0] * Math.sin(a) + v2[1] * Math.cos(a)]);
+};
+
+/**
+ * Gets the equidistant point between two vectors
+ * @param {Vector} v
+ * @param {Vector} v2
+ * @returns {Vector}
+ */
+var vMidpoint = function vMidpoint(v, v2) {
+  return vScale(vAdd(v, v2), 0.5);
+};
+
+/**
+ * Gets the vector r units along the angle a from vector v
+ * @param {Vector} v
+ * @param {Number} a
+ * @param {Number} r
+ * @returns {Vector}
+ */
+var vAlongAngle = function vAlongAngle(v, a, r) {
+  return [v[0] + Math.cos(a) * r, v[1] + Math.sin(a) * r];
+};
+
+/**
+ * Gets the distance between two vectors
+ * @param {Vector} v
+ * @param {Vector} v2
+ * @returns {Number}
+ */
+var vDist = function vDist(v, v2) {
+  return Math.sqrt(Math.pow(v2[0] - v[0], 2) + Math.pow(v2[1] - v[1], 2));
+};
+
+/**
+ * Dot product of two vectors
+ * @param {Vector} v
+ * @param {Vector} v2
+ * @returns {Number}
+ */
+var vDot = function vDot(v, v2) {
+  return v[0] * v2[0] + v[1] * v2[1];
+};
+
+/**
+ * Determinate of a matrix
+ * @param {Matrix} m
+ * @returns {Number}
+ */
+var vDet = function vDet(m) {
+  return m[0] * m[4] - m[3] * m[1];
+};
+
+/**
+ * Returns a builder object for easily composing matrices. Exposes
+ * useful helper functions for general matrix operations:
+ * translate, scale, rotate, shear
+ * as a generic add function that accepts a matrix.
+ * Calling get returns the matrix.
+ * @param {Matrix} m
+ */
+var vMatrixBuilder = function vMatrixBuilder() {
+  var m = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+  var _m = m || vCreateMatrix();
+  return {
+    add: function add(m) {
+      return vMatrixBuilder(vComposeTransform(m, _m));
+    },
+    translate: function translate(x, y) {
+      return vMatrixBuilder(vComposeTransform([1, 0, x, 0, 1, y, 0, 0, 1], _m));
+    },
+    rotate: function rotate(a) {
+      return vMatrixBuilder(vComposeTransform([Math.cos(a), -Math.sin(a), 0, Math.sin(a), Math.cos(a), 0, 0, 0, 1], _m));
+    },
+    scale: function scale(x, y) {
+      return vMatrixBuilder(vComposeTransform([x, 0, 0, 0, y, 0, 0, 0, 1], _m));
+    },
+    shear: function shear(x, y) {
+      return vMatrixBuilder(vComposeTransform([1, x, 0, y, 1, 0, 0, 0, 1], _m));
+    },
+    get: function get() {
+      return [].concat(_toConsumableArray(_m));
+    }
+  };
+};
+
+/* start exports */
+exports.add = vAdd;
+exports.alongAngle = vAlongAngle;
+exports.sub = vSub;
+exports.norm = vNorm;
+exports.mag = vMag;
+exports.scale = vScale;
+exports.normal = vNormal;
+exports.towards = vTowards;
+exports.fTransform = vfTransform;
+exports.transform = vTransform;
+exports.composeTransform = vComposeTransform;
+exports.matrixBuilder = vMatrixBuilder;
+exports.createMatrix = vCreateMatrix;
+exports.rotate = vRotate;
+exports.rotatePointAround = vRotatePointAround;
+exports.midpoint = vMidpoint;
+exports.dot = vDot;
+exports.det = vDet;
+exports.dist = vDist;
+/* end exports */
+},{}],"utils/positionningRect2Dom.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.rectPositionToCSSProperties = exports.positionToCSSTranslate = exports.positionningRectFromSize = exports.positionningRect2Dom = exports.checkCollision = exports.checkCollisionFrom2Size = exports.checkCollisionFrom2Positions = exports.getValueByScale = exports.setBoardOrigin = void 0;
+
+var _vecLa = require("vec-la");
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var isDebug = false;
+var boardOrigin = {
+  x: 0,
+  y: 0
+};
+
+var setBoardOrigin = function setBoardOrigin(_ref) {
+  var _ref2 = _slicedToArray(_ref, 2),
+      x = _ref2[0],
+      y = _ref2[1];
+
+  boardOrigin.x = x;
+  boardOrigin.y = y;
+};
+
+exports.setBoardOrigin = setBoardOrigin;
+
+var getValueByScale = function getValueByScale(value, scaleFactor) {
+  if (scaleFactor < 1) {
+    return value * (1 / scaleFactor);
+  }
+
+  return value / scaleFactor;
+};
+
+exports.getValueByScale = getValueByScale;
+
+var checkCollisionFrom2Positions = function checkCollisionFrom2Positions() {
+  var startPosition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0];
+  var endPosition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0];
+  var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+  var scaleFactor = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+
+  var _positionningRect2Dom = positionningRect2Dom(startPosition, endPosition),
+      x = _positionningRect2Dom.x,
+      y = _positionningRect2Dom.y,
+      width = _positionningRect2Dom.width,
+      height = _positionningRect2Dom.height;
+
+  var xScale = x;
+  var yScale = y;
+  var widthScale = width;
+  var heightScale = height;
+  return checkCollisionFrom2Size([xScale, yScale], [widthScale, heightScale], data, scaleFactor);
+};
+
+exports.checkCollisionFrom2Positions = checkCollisionFrom2Positions;
+
+var checkCollisionFrom2Size = function checkCollisionFrom2Size() {
+  var startPosition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0];
+  var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0];
+  var data = arguments.length > 2 ? arguments[2] : undefined;
+  var scaleFactor = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+
+  var _startPosition = _slicedToArray(startPosition, 2),
+      x = _startPosition[0],
+      y = _startPosition[1];
+
+  var _size = _slicedToArray(size, 2),
+      width = _size[0],
+      height = _size[1];
+
+  return checkCollision({
+    x: x,
+    y: y,
+    width: width,
+    height: height
+  }, data, scaleFactor);
+};
+
+exports.checkCollisionFrom2Size = checkCollisionFrom2Size;
+
+var checkCollision = function checkCollision(bound, data) {
+  var scaleFactor = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+  // console.log('data', data.length, data);
+  return data.filter(function (_ref3) {
+    var x = _ref3.x,
+        y = _ref3.y,
+        id = _ref3.id,
+        size = _ref3.size;
+
+    var _size2 = _slicedToArray(size, 2),
+        width = _size2[0],
+        height = _size2[1];
+
+    var xScale = x * scaleFactor + (boardOrigin.x || 0);
+    var yScale = y * scaleFactor + (boardOrigin.y || 0);
+    var widthScale = width * scaleFactor;
+    var heightScale = height * scaleFactor; // console.log('--->', xScale, yScale);
+    // console.log('>>', window.boardOrigin);
+
+    return bound.x < xScale + widthScale && bound.x + bound.width > xScale && bound.y < yScale + heightScale && bound.y + bound.height > yScale;
+  });
+};
+
+exports.checkCollision = checkCollision;
+
+var positionningRect2Dom = function positionningRect2Dom() {
+  var startPosition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0];
+  var endPosition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0];
+  var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0];
+
+  var _sub = (0, _vecLa.sub)(endPosition, startPosition),
+      _sub2 = _slicedToArray(_sub, 2),
+      width = _sub2[0],
+      height = _sub2[1];
+
+  var _startPosition2 = _slicedToArray(startPosition, 2),
+      xStart = _startPosition2[0],
+      yStart = _startPosition2[1];
+
+  var _endPosition = _slicedToArray(endPosition, 2),
+      xEnd = _endPosition[0],
+      yEnd = _endPosition[1];
+
+  var x = xEnd < xStart ? xEnd : xStart;
+  var y = yEnd < yStart ? yEnd : yStart;
+  return positionningRectFromSize([x, y], [Math.abs(width), Math.abs(height)], offset);
+};
+
+exports.positionningRect2Dom = positionningRect2Dom;
+
+var positionningRectFromSize = function positionningRectFromSize() {
+  var startPosition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0];
+  var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0];
+  var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0];
+
+  var _startPosition3 = _slicedToArray(startPosition, 2),
+      xStart = _startPosition3[0],
+      yStart = _startPosition3[1];
+
+  var _offset = _slicedToArray(offset, 2),
+      xOffset = _offset[0],
+      yOffset = _offset[1];
+
+  var _size3 = _slicedToArray(size, 2),
+      width = _size3[0],
+      height = _size3[1];
+
+  var x = xStart,
+      y = yStart;
+  var x2 = x + width;
+  var y2 = y + height;
+  return {
+    x: x + xOffset,
+    y: y + yOffset,
+    x2: x2 + xOffset,
+    y2: y2 + yOffset,
+    width: width,
+    height: height,
+    start: {
+      x: xStart + xOffset,
+      y: yStart + yOffset
+    },
+    end: {
+      x: x2 + xOffset,
+      y: y2 + yOffset
+    }
+  };
+};
+
+exports.positionningRectFromSize = positionningRectFromSize;
+
+var positionToCSSTranslate = function positionToCSSTranslate(x, y) {
+  return {
+    transform: "translate3d(".concat(x, "px, ").concat(y, "px, 0)")
+  };
+};
+
+exports.positionToCSSTranslate = positionToCSSTranslate;
+
+var rectPositionToCSSProperties = function rectPositionToCSSProperties(_ref4) {
+  var x = _ref4.x,
+      y = _ref4.y,
+      width = _ref4.width,
+      height = _ref4.height;
+  var display = '';
+
+  if (width === 0 && height === 0) {
+    display = 'none';
+  }
+
+  return _objectSpread({}, positionToCSSTranslate(x, y), {
+    width: "".concat(width, "px"),
+    height: "".concat(height, "px"),
+    display: display
+  });
+};
+
+exports.rectPositionToCSSProperties = rectPositionToCSSProperties;
+},{"vec-la":"node_modules/vec-la/dist/vec.module.js"}],"utils/DragNDrop.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+
+var _positionningRect2Dom = require("./positionningRect2Dom");
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -31766,17 +32242,8 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var getPosByScale = function getPosByScale(pos, scaleFactor) {
-  // console.log('getPosByScale', pos, scaleFactor);
-  var scale = scaleFactor;
-
-  if (scaleFactor < 1) {
-    scale = 1 / scaleFactor;
-    return pos * scale;
-  }
-
-  return pos / scale;
-};
+window.positionningRect2Dom = _positionningRect2Dom.positionningRect2Dom;
+window.rectPositionToCSSProperties = _positionningRect2Dom.rectPositionToCSSProperties;
 
 var DragNDrop =
 /*#__PURE__*/
@@ -31795,6 +32262,7 @@ function () {
     this.origin = opts.origin;
     this.max_scale = 10;
     this.min_scale = 0.1;
+    this.selectionAreaEl = null;
     this.el = opts.el;
     this.transform = {
       k: opts.scaleFactor,
@@ -31804,8 +32272,9 @@ function () {
     this.selectionAreaBox = {
       x: 0,
       y: 0,
-      width: 0,
-      height: 0
+      endx: 0,
+      endy: 0,
+      initialized: false
     };
     this._startPosition = null;
     this.mouseDown = false;
@@ -31815,7 +32284,7 @@ function () {
     this.isNode = null;
     this.selectedNodes = [];
     this.unselectedNodes = [];
-    this.draggingBoard = true;
+    this.draggingBoard = false;
     console.log("--> constructor");
     var img = document.createElement("img");
     img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -31828,8 +32297,8 @@ function () {
 
     this.onKeyHandler = function () {};
 
-    window.fitToScreen = function (value) {
-      _this.fitToScreen();
+    window.setSelectionBox = function (start, end) {
+      _this.setSelectionBox(start, end);
     };
 
     this.update();
@@ -31854,6 +32323,9 @@ function () {
     key: "setContainer",
     value: function setContainer(container) {
       this.container = container;
+      this.selectionAreaEl = document.createElement("div");
+      this.selectionAreaEl.classList.add("GraphViewer__SelectionBox");
+      this.container.appendChild(this.selectionAreaEl);
     }
   }, {
     key: "setOrigin",
@@ -31878,9 +32350,9 @@ function () {
   }, {
     key: "initEventListeners",
     value: function initEventListeners() {
-      this.container.addEventListener('pointerdown', function () {
-        console.log('>>');
-      });
+      // this.container.addEventListener('touchstart', function() {
+      //   console.log('>>');
+      // });
       document.addEventListener("keyup", this.onKeyHandler.bind(this, "up"), false);
       document.addEventListener("keydown", this.onKeyHandler.bind(this, "down"), false);
       this.container.addEventListener("drag", this.handleDragEvent.bind(this), false);
@@ -31891,6 +32363,8 @@ function () {
       this.container.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
       this.container.addEventListener("mousemove", this.handleMouseMove.bind(this), false);
       this.container.addEventListener("wheel", this.handleMouseWheel.bind(this), false);
+      this.isMouseCounts = [];
+      this.hasTouchpad = false;
     }
   }, {
     key: "destroyEventListeners",
@@ -31909,21 +32383,22 @@ function () {
     value: function handleMouseWheel(e) {
       e.preventDefault();
 
-      if (!e.ctrlKey) {
-        // console.log('wheel',  e.deltaX, e.deltaY);
-        // const d = this.getDeltaPosition(e.x, e.y);
+      if (!e.shiftKey) {
+        //if normal gesture move
         this._startPosition = _objectSpread({}, this.transform);
-        this.onTranslate(e.deltaX, e.deltaY);
+        this.onTranslate(e.deltaX * -1, e.deltaY * -1); // invert delta for natural scroll behavior
+
         return;
-      }
+      } // pinch to zoom on trackpad is set by browser w/ ctrlKey=true
+
 
       var rect = this.el.getBoundingClientRect();
       var wheelDelta = e.wheelDelta;
       var intensity = 0.05;
-      var delta = (wheelDelta ? wheelDelta / 120 : -e.deltaY / 3) * intensity;
-      console.log(e.clientX);
-      var zoomingCenter = [e.clientX, e.clientY];
-      zoomingCenter = [this.container.getBoundingClientRect().width / 2, this.container.getBoundingClientRect().height / 2];
+      var delta = (wheelDelta ? wheelDelta / 120 : -e.deltaY / 3) * intensity; // console.log(e.clientX);
+
+      var zoomingCenter = [e.clientX, e.clientY]; // zoomingCenter = [this.container.getBoundingClientRect().width /2 , this.container.getBoundingClientRect().height /2 ];
+
       var ox = (rect.left - zoomingCenter[0]) * delta;
       var oy = (rect.top - zoomingCenter[1]) * delta;
       this.onZoom(delta, ox, oy, "wheel");
@@ -31994,68 +32469,6 @@ function () {
       this.el.style.transform = "translate3d(".concat(t.x, "px, ").concat(t.y, "px, 0) scale(").concat(t.k, ")");
     }
   }, {
-    key: "handleMouseWheel_",
-    value: function handleMouseWheel_(e) {
-      var delta = e.wheelDeltaY != null ? e.wheelDeltaY : e.detail * -60;
-      this.adjustMouseEvent(e);
-      var scale = this.scaleFactor;
-
-      if (delta > 0) {
-        scale *= 1.1;
-      } else if (delta < 0) {
-        scale *= 1 / 1.1;
-      }
-
-      this.changeScale(scale, [e.localX, e.localY]);
-    }
-  }, {
-    key: "convertCanvasToOffset",
-    value: function convertCanvasToOffset(pos, out) {
-      out = out || [0, 0];
-      out[0] = pos[0] / this.scaleFactor - this.origin[0];
-      out[1] = pos[1] / this.scaleFactor - this.origin[1];
-      return out;
-    }
-  }, {
-    key: "changeScale",
-    value: function changeScale(value, zooming_center) {
-      if (value < this.min_scale) {
-        value = this.min_scale;
-      } else if (value > this.max_scale) {
-        value = this.max_scale;
-      }
-
-      if (value == this.scaleFactor) {
-        return;
-      }
-
-      var rect = this.container.getBoundingClientRect(); //aka -> canvas element
-
-      if (!rect) {
-        return;
-      }
-
-      zooming_center = [rect.width * 0.5, rect.height * 0.5]; // center of rect if no zooming_center
-
-      var center = this.convertCanvasToOffset(zooming_center);
-      this.scaleFactor = value;
-
-      if (Math.abs(this.scaleFactor - 1) < 0.01) {
-        this.scaleFactor = 1;
-      }
-
-      var new_center = this.convertCanvasToOffset(zooming_center);
-      var delta_offset = [new_center[0] - center[0], new_center[1] - center[1]];
-      console.log(this.scaleFactor, delta_offset);
-      this.origin[0] = delta_offset[0];
-      this.origin[1] = delta_offset[1]; // console.log("update all", this.origin);
-
-      this.onScaleHandler({
-        scale: this.scaleFactor,
-        origin: this.origin
-      });
-    }
-  }, {
     key: "handleMouseDown",
     value: function handleMouseDown(event) {
       if (event.button !== 0 || event.ctrlKey) {
@@ -32083,12 +32496,15 @@ function () {
         dragObject.node = true;
         dragObject.target = nodeElement;
         this.isNode = true;
-        this.updateDOMTranslate(event);
+        this.updateDOMTranslate(event); // this.selectionAreaBox.initialized = false;
       } else {
+        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
         // if selection --> setting up xy pos,
         this.selectionAreaBox.x = event.x;
         this.selectionAreaBox.y = event.y;
-        this.renderSelectionAreaBox();
+        this.selectionAreaBox.initialized = true; // this.renderSelectionAreaBox();
+
+        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       }
 
       var evt = this.updateEventObject(dragObject, event); // build a correct object
@@ -32115,9 +32531,18 @@ function () {
 
       if (!this.isNode) {
         this.selectedNodes = [];
-        this.selectionAreaBox.x = event.x;
-        this.selectionAreaBox.y = event.y;
-        this.renderSelectionAreaBox();
+      } // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
+
+
+      if (this.selectionAreaBox.x === event.x && this.selectionAreaBox.y === event.y) {
+        this.hideSelectionBox();
+        this.selectionAreaBox = {
+          x: 0,
+          y: 0,
+          endx: 0,
+          endy: 0,
+          initialized: false
+        };
       }
 
       this.unselectedNodes = [];
@@ -32127,6 +32552,27 @@ function () {
   }, {
     key: "handleMouseMove",
     value: function handleMouseMove(event) {
+      if (this.mouseDown) {
+        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+        var _this$selectionAreaBo = this.selectionAreaBox,
+            x = _this$selectionAreaBo.x,
+            y = _this$selectionAreaBo.y;
+        var endX = event.x;
+        var endY = event.y;
+
+        if (x !== endX && y !== endY) {
+          this.showSelectionBox(); // if same pos do nothing
+          // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
+          // this.selectionAreaBox = { ...rectPos };
+
+          this.selectionAreaBox.endx = event.x;
+          this.selectionAreaBox.endy = event.y;
+          this.renderSelectionAreaBox();
+        }
+        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+
+      }
+
       if (!this.mouseDown && !this.isDragging) {
         return;
       }
@@ -32178,12 +32624,12 @@ function () {
       // Empêche default d'autoriser le drop
       event.preventDefault();
       this.isDragging = true;
-      this.updateDOMTranslate(event); // console.log(getPosByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor));
+      this.updateDOMTranslate(event); // console.log(getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor));
       // const evt = this.updateEventObject({
       //   delta: this.getDeltaPosition(event.x, event.y)
       // }, event)
       // this.onDragHandler.call(this, evt);
-      // this.dragged.style.transform = `translate3d(${getPosByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getPosByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
+      // this.dragged.style.transform = `translate3d(${getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getValueByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
     }
   }, {
     key: "updateDOMTranslate",
@@ -32209,8 +32655,8 @@ function () {
           dposX = _this$draggedClickPos[0],
           dposY = _this$draggedClickPos[1];
 
-      var posX = getPosByScale(newX - dposX, this.transform.k);
-      var posY = getPosByScale(newY - dposY, this.transform.k);
+      var posX = (0, _positionningRect2Dom.getValueByScale)(newX - dposX, this.transform.k);
+      var posY = (0, _positionningRect2Dom.getValueByScale)(newY - dposY, this.transform.k);
       return [posX, posY];
     }
   }, {
@@ -32319,7 +32765,45 @@ function () {
   }, {
     key: "renderSelectionAreaBox",
     value: function renderSelectionAreaBox() {
-      console.log('select', this.selectionAreaBox);
+      /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+      if (this.selectionAreaEl === null) {
+        return;
+      } // const { transform, width, height } = rectPositionToCSSProperties(
+      //   this.selectionAreaBox
+      // );
+      // this.selectionAreaEl.style.transform = transform;
+      // this.selectionAreaEl.style.width = width;
+      // this.selectionAreaEl.style.height = height;
+
+
+      var _this$selectionAreaBo2 = this.selectionAreaBox,
+          x = _this$selectionAreaBo2.x,
+          y = _this$selectionAreaBo2.y,
+          endx = _this$selectionAreaBo2.endx,
+          endy = _this$selectionAreaBo2.endy;
+      this.setSelectionBox([x, y], [endx, endy]);
+    }
+  }, {
+    key: "setSelectionBox",
+    value: function setSelectionBox(start, end) {
+      var _rectPositionToCSSPro = (0, _positionningRect2Dom.rectPositionToCSSProperties)((0, _positionningRect2Dom.positionningRect2Dom)(start, end)),
+          transform = _rectPositionToCSSPro.transform,
+          width = _rectPositionToCSSPro.width,
+          height = _rectPositionToCSSPro.height;
+
+      this.selectionAreaEl.style.transform = transform;
+      this.selectionAreaEl.style.width = width;
+      this.selectionAreaEl.style.height = height;
+    }
+  }, {
+    key: "hideSelectionBox",
+    value: function hideSelectionBox() {
+      this.selectionAreaEl.classList.add('GraphViewer__SelectionBox--hide');
+    }
+  }, {
+    key: "showSelectionBox",
+    value: function showSelectionBox() {
+      this.selectionAreaEl.classList.remove('GraphViewer__SelectionBox--hide');
     }
   }]);
 
@@ -32327,7 +32811,7 @@ function () {
 }();
 
 exports.default = DragNDrop;
-},{}],"hooks/useDnD.js":[function(require,module,exports) {
+},{"./positionningRect2Dom":"utils/positionningRect2Dom.js"}],"hooks/useDnD.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -32894,7 +33378,7 @@ var GraphNavigator = function GraphNavigator(props) {
       connectables = _useState2[0],
       setConnectables = _useState2[1];
 
-  var _useState3 = (0, _react.useState)([0, 0]),
+  var _useState3 = (0, _react.useState)([300, 500]),
       _useState4 = _slicedToArray(_useState3, 2),
       boardOrigin = _useState4[0],
       setBoardOrigin = _useState4[1];

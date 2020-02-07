@@ -9,6 +9,18 @@
 .GraphViewer *:not(input textarea) {
   user-select: none;
 }
+.GraphViewer__SelectionBox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid tomato;
+  background-color: rgba(255, 99, 71, 0.3);
+  pointer-events: none;
+  opacity: 1;
+}
+.GraphViewer__SelectionBox--hide {
+  opacity: 0;
+}
 
 .node {
   width: 120px;
