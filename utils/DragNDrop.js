@@ -28,6 +28,14 @@ export default class DragNDrop {
       x: this.origin[0],
       y: this.origin[1]
     };
+
+    this.selectionAreaBox = {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    };
+
     this._startPosition = null;
 
     this.mouseDown = false;
@@ -99,6 +107,10 @@ export default class DragNDrop {
   }
 
   initEventListeners() {
+    this.container.addEventListener('pointerdown', function() {
+      console.log('>>');
+    });
+
     document.addEventListener(
       "keyup",
       this.onKeyHandler.bind(this, "up"),
@@ -200,13 +212,25 @@ export default class DragNDrop {
   handleMouseWheel(e) {
     e.preventDefault();
 
+    
+
+    if (!e.ctrlKey) {
+      // console.log('wheel',  e.deltaX, e.deltaY);
+      // const d = this.getDeltaPosition(e.x, e.y);
+      this._startPosition = { ...this.transform };
+      this.onTranslate(e.deltaX, e.deltaY);
+      return;
+    }
+
+
     const rect = this.el.getBoundingClientRect();
     const wheelDelta = e.wheelDelta;
-    const intensity = 0.1;
+    const intensity = 0.05;
     const delta = (wheelDelta ? wheelDelta / 120 : -e.deltaY / 3) * intensity;
 
+    console.log(e.clientX);
     let zoomingCenter = [e.clientX, e.clientY];
-    // zoomingCenter = [this.container.getBoundingClientRect().width /2 , this.container.getBoundingClientRect().height /2 ];
+    zoomingCenter = [this.container.getBoundingClientRect().width /2 , this.container.getBoundingClientRect().height /2 ];
 
     const ox = (rect.left - zoomingCenter[0]) * delta;
     const oy = (rect.top - zoomingCenter[1]) * delta;
@@ -356,12 +380,19 @@ export default class DragNDrop {
       dragObject.target = nodeElement;
       this.isNode = true;
       this.updateDOMTranslate(event);
+    } else {
+      // if selection --> setting up xy pos,
+      this.selectionAreaBox.x = event.x;
+      this.selectionAreaBox.y = event.y;
+      this.renderSelectionAreaBox();
     }
 
     const evt = this.updateEventObject(dragObject, event); // build a correct object
 
     this.onStart(); // used for scaling --> refactoring to delete it
     // this.onDragHandler.call(this, evt); // dispatch to the down click event
+
+    
   }
 
   handleMouseUp(event) {
@@ -392,6 +423,11 @@ export default class DragNDrop {
 
     if (!this.isNode) {
       this.selectedNodes = [];
+      
+
+      this.selectionAreaBox.x = event.x;
+      this.selectionAreaBox.y = event.y;
+      this.renderSelectionAreaBox();
     }
 
     this.unselectedNodes = [];
@@ -584,5 +620,9 @@ export default class DragNDrop {
     };
 
     this.update();
+  }
+
+  renderSelectionAreaBox() {
+    console.log('select', this.selectionAreaBox);
   }
 }

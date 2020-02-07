@@ -9,6 +9,9 @@ export default class NodeWrapper extends Component{
     this.external_onOverEvent = this.onOverEvent.bind(this);
     this.external_onClickEvent = this.onClickEvent.bind(this, true);
     this.external_onUnselectedEvent = this.onClickEvent.bind(this, false);
+
+    // TODO add a call for CanvasMinimap
+    // use the benefit of rendering loop
   }
 
   updateState(evt) {

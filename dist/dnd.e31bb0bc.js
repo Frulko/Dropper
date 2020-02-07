@@ -31801,6 +31801,12 @@ function () {
       x: this.origin[0],
       y: this.origin[1]
     };
+    this.selectionAreaBox = {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0
+    };
     this._startPosition = null;
     this.mouseDown = false;
     this.isDragging = false;
@@ -31872,6 +31878,9 @@ function () {
   }, {
     key: "initEventListeners",
     value: function initEventListeners() {
+      this.container.addEventListener('pointerdown', function () {
+        console.log('>>');
+      });
       document.addEventListener("keyup", this.onKeyHandler.bind(this, "up"), false);
       document.addEventListener("keydown", this.onKeyHandler.bind(this, "down"), false);
       this.container.addEventListener("drag", this.handleDragEvent.bind(this), false);
@@ -31899,12 +31908,22 @@ function () {
     key: "handleMouseWheel",
     value: function handleMouseWheel(e) {
       e.preventDefault();
+
+      if (!e.ctrlKey) {
+        // console.log('wheel',  e.deltaX, e.deltaY);
+        // const d = this.getDeltaPosition(e.x, e.y);
+        this._startPosition = _objectSpread({}, this.transform);
+        this.onTranslate(e.deltaX, e.deltaY);
+        return;
+      }
+
       var rect = this.el.getBoundingClientRect();
       var wheelDelta = e.wheelDelta;
-      var intensity = 0.1;
+      var intensity = 0.05;
       var delta = (wheelDelta ? wheelDelta / 120 : -e.deltaY / 3) * intensity;
-      var zoomingCenter = [e.clientX, e.clientY]; // zoomingCenter = [this.container.getBoundingClientRect().width /2 , this.container.getBoundingClientRect().height /2 ];
-
+      console.log(e.clientX);
+      var zoomingCenter = [e.clientX, e.clientY];
+      zoomingCenter = [this.container.getBoundingClientRect().width / 2, this.container.getBoundingClientRect().height / 2];
       var ox = (rect.left - zoomingCenter[0]) * delta;
       var oy = (rect.top - zoomingCenter[1]) * delta;
       this.onZoom(delta, ox, oy, "wheel");
@@ -32065,6 +32084,11 @@ function () {
         dragObject.target = nodeElement;
         this.isNode = true;
         this.updateDOMTranslate(event);
+      } else {
+        // if selection --> setting up xy pos,
+        this.selectionAreaBox.x = event.x;
+        this.selectionAreaBox.y = event.y;
+        this.renderSelectionAreaBox();
       }
 
       var evt = this.updateEventObject(dragObject, event); // build a correct object
@@ -32091,6 +32115,9 @@ function () {
 
       if (!this.isNode) {
         this.selectedNodes = [];
+        this.selectionAreaBox.x = event.x;
+        this.selectionAreaBox.y = event.y;
+        this.renderSelectionAreaBox();
       }
 
       this.unselectedNodes = [];
@@ -32288,6 +32315,11 @@ function () {
         y: 0
       };
       this.update();
+    }
+  }, {
+    key: "renderSelectionAreaBox",
+    value: function renderSelectionAreaBox() {
+      console.log('select', this.selectionAreaBox);
     }
   }]);
 
@@ -32590,7 +32622,9 @@ function (_Component) {
     _this.external_update_state_function = _this.updateState.bind(_assertThisInitialized(_this));
     _this.external_onOverEvent = _this.onOverEvent.bind(_assertThisInitialized(_this));
     _this.external_onClickEvent = _this.onClickEvent.bind(_assertThisInitialized(_this), true);
-    _this.external_onUnselectedEvent = _this.onClickEvent.bind(_assertThisInitialized(_this), false);
+    _this.external_onUnselectedEvent = _this.onClickEvent.bind(_assertThisInitialized(_this), false); // TODO add a call for CanvasMinimap
+    // use the benefit of rendering loop
+
     return _this;
   }
 
