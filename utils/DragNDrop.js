@@ -1,12 +1,11 @@
-const getPosByScale = (pos, scaleFactor) => {
-  // console.log('getPosByScale', pos, scaleFactor);
-  let scale = scaleFactor;
-  if (scaleFactor < 1) {
-    scale = 1 / scaleFactor;
-    return pos * scale;
-  }
-  return pos / scale;
-};
+import {
+  positionningRect2Dom,
+  rectPositionToCSSProperties,
+  getValueByScale
+} from "./positionningRect2Dom";
+
+window.positionningRect2Dom = positionningRect2Dom;
+window.rectPositionToCSSProperties = rectPositionToCSSProperties;
 
 export default class DragNDrop {
   constructor(opts) {
@@ -21,6 +20,8 @@ export default class DragNDrop {
     this.max_scale = 10;
     this.min_scale = 0.1;
 
+    this.selectionAreaEl = null;
+
     this.el = opts.el;
 
     this.transform = {
@@ -32,8 +33,9 @@ export default class DragNDrop {
     this.selectionAreaBox = {
       x: 0,
       y: 0,
-      width: 0,
-      height: 0,
+      endx: 0,
+      endy: 0,
+      initialized: false
     };
 
     this._startPosition = null;
@@ -48,7 +50,7 @@ export default class DragNDrop {
     this.selectedNodes = [];
     this.unselectedNodes = [];
 
-    this.draggingBoard = true;
+    this.draggingBoard = false;
 
     console.log("--> constructor");
 
@@ -64,8 +66,8 @@ export default class DragNDrop {
 
     this.onKeyHandler = () => {};
 
-    window.fitToScreen = value => {
-      this.fitToScreen();
+    window.setSelectionBox = (start, end) => {
+      this.setSelectionBox(start, end);
     };
 
     this.update();
@@ -88,6 +90,11 @@ export default class DragNDrop {
 
   setContainer(container) {
     this.container = container;
+
+    this.selectionAreaEl = document.createElement("div");
+    this.selectionAreaEl.classList.add("GraphViewer__SelectionBox");
+
+    this.container.appendChild(this.selectionAreaEl);
   }
 
   setOrigin(origin) {
@@ -107,9 +114,9 @@ export default class DragNDrop {
   }
 
   initEventListeners() {
-    this.container.addEventListener('pointerdown', function() {
-      console.log('>>');
-    });
+    // this.container.addEventListener('touchstart', function() {
+    //   console.log('>>');
+    // });
 
     document.addEventListener(
       "keyup",
@@ -163,6 +170,9 @@ export default class DragNDrop {
       this.handleMouseWheel.bind(this),
       false
     );
+
+    this.isMouseCounts = [];
+    this.hasTouchpad = false;
   }
 
   destroyEventListeners() {
@@ -211,26 +221,23 @@ export default class DragNDrop {
 
   handleMouseWheel(e) {
     e.preventDefault();
-
-    
-
-    if (!e.ctrlKey) {
-      // console.log('wheel',  e.deltaX, e.deltaY);
-      // const d = this.getDeltaPosition(e.x, e.y);
+    if (!e.shiftKey) {
+      //if normal gesture move
       this._startPosition = { ...this.transform };
-      this.onTranslate(e.deltaX, e.deltaY);
+      this.onTranslate(e.deltaX * -1, e.deltaY * -1); // invert delta for natural scroll behavior
       return;
     }
 
+    // pinch to zoom on trackpad is set by browser w/ ctrlKey=true
 
     const rect = this.el.getBoundingClientRect();
     const wheelDelta = e.wheelDelta;
     const intensity = 0.05;
     const delta = (wheelDelta ? wheelDelta / 120 : -e.deltaY / 3) * intensity;
 
-    console.log(e.clientX);
+    // console.log(e.clientX);
     let zoomingCenter = [e.clientX, e.clientY];
-    zoomingCenter = [this.container.getBoundingClientRect().width /2 , this.container.getBoundingClientRect().height /2 ];
+    // zoomingCenter = [this.container.getBoundingClientRect().width /2 , this.container.getBoundingClientRect().height /2 ];
 
     const ox = (rect.left - zoomingCenter[0]) * delta;
     const oy = (rect.top - zoomingCenter[1]) * delta;
@@ -292,69 +299,6 @@ export default class DragNDrop {
     this.el.style.transform = `translate3d(${t.x}px, ${t.y}px, 0) scale(${t.k})`;
   }
 
-  handleMouseWheel_(e) {
-    var delta = e.wheelDeltaY != null ? e.wheelDeltaY : e.detail * -60;
-
-    this.adjustMouseEvent(e);
-
-    var scale = this.scaleFactor;
-
-    if (delta > 0) {
-      scale *= 1.1;
-    } else if (delta < 0) {
-      scale *= 1 / 1.1;
-    }
-    this.changeScale(scale, [e.localX, e.localY]);
-  }
-
-  convertCanvasToOffset(pos, out) {
-    out = out || [0, 0];
-    out[0] = pos[0] / this.scaleFactor - this.origin[0];
-    out[1] = pos[1] / this.scaleFactor - this.origin[1];
-    return out;
-  }
-
-  changeScale(value, zooming_center) {
-    if (value < this.min_scale) {
-      value = this.min_scale;
-    } else if (value > this.max_scale) {
-      value = this.max_scale;
-    }
-
-    if (value == this.scaleFactor) {
-      return;
-    }
-
-    var rect = this.container.getBoundingClientRect(); //aka -> canvas element
-    if (!rect) {
-      return;
-    }
-
-    zooming_center = [rect.width * 0.5, rect.height * 0.5]; // center of rect if no zooming_center
-
-    var center = this.convertCanvasToOffset(zooming_center);
-    this.scaleFactor = value;
-    if (Math.abs(this.scaleFactor - 1) < 0.01) {
-      this.scaleFactor = 1;
-    }
-
-    var new_center = this.convertCanvasToOffset(zooming_center);
-
-    var delta_offset = [new_center[0] - center[0], new_center[1] - center[1]];
-
-    console.log(this.scaleFactor, delta_offset);
-
-    this.origin[0] = delta_offset[0];
-    this.origin[1] = delta_offset[1];
-
-    // console.log("update all", this.origin);
-
-    this.onScaleHandler({
-      scale: this.scaleFactor,
-      origin: this.origin
-    });
-  }
-
   handleMouseDown(event) {
     if (event.button !== 0 || event.ctrlKey) {
       // check if left click only
@@ -380,19 +324,21 @@ export default class DragNDrop {
       dragObject.target = nodeElement;
       this.isNode = true;
       this.updateDOMTranslate(event);
+      // this.selectionAreaBox.initialized = false;
     } else {
+      /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       // if selection --> setting up xy pos,
       this.selectionAreaBox.x = event.x;
       this.selectionAreaBox.y = event.y;
-      this.renderSelectionAreaBox();
+      this.selectionAreaBox.initialized = true;
+      // this.renderSelectionAreaBox();
+      /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
     }
 
     const evt = this.updateEventObject(dragObject, event); // build a correct object
 
     this.onStart(); // used for scaling --> refactoring to delete it
     // this.onDragHandler.call(this, evt); // dispatch to the down click event
-
-    
   }
 
   handleMouseUp(event) {
@@ -423,21 +369,51 @@ export default class DragNDrop {
 
     if (!this.isNode) {
       this.selectedNodes = [];
-      
-
-      this.selectionAreaBox.x = event.x;
-      this.selectionAreaBox.y = event.y;
-      this.renderSelectionAreaBox();
     }
 
+    // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
+
+    if (this.selectionAreaBox.x === event.x && this.selectionAreaBox.y === event.y) {
+      this.hideSelectionBox();
+
+      this.selectionAreaBox = {
+        x: 0,
+        y: 0,
+        endx: 0,
+        endy: 0,
+        initialized: false,
+      }
+    }
+
+
     this.unselectedNodes = [];
-
     this.posFirst = [0, 0];
-
     this.onDragHandler.call(this, evt);
   }
 
   handleMouseMove(event) {
+
+    if (this.mouseDown) {
+        
+        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+        const { x, y } = this.selectionAreaBox;
+        const endX = event.x;
+        const endY = event.y;
+        if (x !== endX && y !== endY) {
+          this.showSelectionBox();
+          // if same pos do nothing
+          // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
+          // this.selectionAreaBox = { ...rectPos };
+          this.selectionAreaBox.endx = event.x;
+          this.selectionAreaBox.endy = event.y;
+          this.renderSelectionAreaBox();
+        }
+        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+
+
+    }
+
+
     if (!this.mouseDown && !this.isDragging) {
       return;
     }
@@ -461,6 +437,8 @@ export default class DragNDrop {
     // );
     // this.posFirst = [event.x, event.y];
     // this.onDragHandler.call(this, evt);
+
+
     if (this.draggingBoard) {
       const d = this.getDeltaPosition(event.x, event.y);
       this.onTranslate(d[0], d[1]);
@@ -489,13 +467,13 @@ export default class DragNDrop {
     event.preventDefault();
     this.isDragging = true;
     this.updateDOMTranslate(event);
-    // console.log(getPosByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor));
+    // console.log(getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor));
     // const evt = this.updateEventObject({
     //   delta: this.getDeltaPosition(event.x, event.y)
     // }, event)
 
     // this.onDragHandler.call(this, evt);
-    // this.dragged.style.transform = `translate3d(${getPosByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getPosByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
+    // this.dragged.style.transform = `translate3d(${getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getValueByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
   }
 
   updateDOMTranslate(event) {
@@ -515,8 +493,8 @@ export default class DragNDrop {
 
     const [dposX, dposY] = this.draggedClickPositionOffset;
 
-    const posX = getPosByScale(newX - dposX, this.transform.k);
-    const posY = getPosByScale(newY - dposY, this.transform.k);
+    const posX = getValueByScale(newX - dposX, this.transform.k);
+    const posY = getValueByScale(newY - dposY, this.transform.k);
 
     return [posX, posY];
   }
@@ -550,7 +528,7 @@ export default class DragNDrop {
       y: 0,
       width: 0,
       height: 0
-    }
+    };
 
     for (let i = 0, l = els.length; i < l; i += 1) {
       const b = els[i].getBoundingClientRect();
@@ -561,13 +539,13 @@ export default class DragNDrop {
       //   height: b.height * (1/this.transform.k)
       // };
 
-      const l =  (b.left - this.transform.x) * (1/this.transform.k);
-      const t =  (b.top - this.transform.y) * (1/this.transform.k)
+      const l = (b.left - this.transform.x) * (1 / this.transform.k);
+      const t = (b.top - this.transform.y) * (1 / this.transform.k);
       const rect = {
         x: l,
         y: t,
-        width: b.width * (1/this.transform.k),
-        height: b.height * (1/this.transform.k)
+        width: b.width * (1 / this.transform.k),
+        height: b.height * (1 / this.transform.k)
       };
 
       // console.log('w', rect.width, rect.width * (1/this.transform.k))
@@ -589,21 +567,21 @@ export default class DragNDrop {
       }
     }
 
-
     const rect = this.container.getBoundingClientRect();
     const padding = 150;
     let k = this.transform.k;
-    if (boundingBox.width < boundingBox.height) { // if landscape mode
-      k = (rect.height - padding) / (boundingBox.height);
+    if (boundingBox.width < boundingBox.height) {
+      // if landscape mode
+      k = (rect.height - padding) / boundingBox.height;
     } else {
-      k = (rect.width - padding) / (boundingBox.width);
+      k = (rect.width - padding) / boundingBox.width;
     }
 
     this.transform = {
       k,
-      x: rect.width/2 - ((boundingBox.width / 2) * (k) ), 
-      y: rect.height/2 - ((boundingBox.height / 2) * (k) ), 
-    }
+      x: rect.width / 2 - (boundingBox.width / 2) * k,
+      y: rect.height / 2 - (boundingBox.height / 2) * k
+    };
 
     this.update();
   }
@@ -623,6 +601,38 @@ export default class DragNDrop {
   }
 
   renderSelectionAreaBox() {
-    console.log('select', this.selectionAreaBox);
+    /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+
+    if (this.selectionAreaEl === null) {
+      return;
+    }
+
+    // const { transform, width, height } = rectPositionToCSSProperties(
+    //   this.selectionAreaBox
+    // );
+
+    // this.selectionAreaEl.style.transform = transform;
+    // this.selectionAreaEl.style.width = width;
+    // this.selectionAreaEl.style.height = height;
+
+    const {x, y, endx, endy} = this.selectionAreaBox;
+
+    this.setSelectionBox([x, y], [endx, endy]);
+  }
+
+  setSelectionBox(start, end) {
+    const { transform, width, height } = rectPositionToCSSProperties(positionningRect2Dom(start, end));
+
+    this.selectionAreaEl.style.transform = transform;
+    this.selectionAreaEl.style.width = width;
+    this.selectionAreaEl.style.height = height;
+  }
+
+  hideSelectionBox() {
+    this.selectionAreaEl.classList.add('GraphViewer__SelectionBox--hide');
+  }
+
+  showSelectionBox() {
+    this.selectionAreaEl.classList.remove('GraphViewer__SelectionBox--hide');
   }
 }

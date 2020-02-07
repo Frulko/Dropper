@@ -9,6 +9,19 @@
   & *:not(input textarea){
     user-select: none;
   }
+
+  &__SelectionBox{
+    position: absolute;
+    top:0;
+    left: 0;
+    border: 1px solid tomato;
+    background-color: rgba(tomato, .3);
+    pointer-events: none;
+    opacity: 1;
+    &--hide{
+      opacity: 0;
+    }
+  }
 }
 
 .node {
