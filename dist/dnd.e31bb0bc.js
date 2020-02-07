@@ -32249,8 +32249,6 @@ var DragNDrop =
 /*#__PURE__*/
 function () {
   function DragNDrop(opts) {
-    var _this = this;
-
     _classCallCheck(this, DragNDrop);
 
     this.container = null;
@@ -32296,10 +32294,6 @@ function () {
     this.dragImagePlaceholder = img;
 
     this.onKeyHandler = function () {};
-
-    window.setSelectionBox = function (start, end) {
-      _this.setSelectionBox(start, end);
-    };
 
     this.update();
   }
@@ -32386,7 +32380,7 @@ function () {
       if (!e.shiftKey) {
         //if normal gesture move
         this._startPosition = _objectSpread({}, this.transform);
-        this.onTranslate(e.deltaX * -1, e.deltaY * -1); // invert delta for natural scroll behavior
+        this.onTranslate(e.deltaX, e.deltaY); // invert delta for natural scroll behavior
 
         return;
       } // pinch to zoom on trackpad is set by browser w/ ctrlKey=true
@@ -32532,17 +32526,13 @@ function () {
       if (!this.isNode) {
         this.selectedNodes = [];
       } // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
+      // TODO check if is stop on a node -- do not select and trigger it
 
 
-      if (this.selectionAreaBox.x === event.x && this.selectionAreaBox.y === event.y) {
-        this.hideSelectionBox();
-        this.selectionAreaBox = {
-          x: 0,
-          y: 0,
-          endx: 0,
-          endy: 0,
-          initialized: false
-        };
+      var selectionIsAtSamePosition = this.selectionAreaBox.x === event.x && this.selectionAreaBox.y === event.y;
+
+      if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
+        this.resetSelectionBoxArea();
       }
 
       this.unselectedNodes = [];
@@ -32781,11 +32771,12 @@ function () {
           y = _this$selectionAreaBo2.y,
           endx = _this$selectionAreaBo2.endx,
           endy = _this$selectionAreaBo2.endy;
-      this.setSelectionBox([x, y], [endx, endy]);
+      var selection = this.calculateCollisionsInsideSelectionArea([x, y], [endx, endy]);
+      this.updateSelectionBoxDOM([x, y], [endx, endy]);
     }
   }, {
-    key: "setSelectionBox",
-    value: function setSelectionBox(start, end) {
+    key: "updateSelectionBoxDOM",
+    value: function updateSelectionBoxDOM(start, end) {
       var _rectPositionToCSSPro = (0, _positionningRect2Dom.rectPositionToCSSProperties)((0, _positionningRect2Dom.positionningRect2Dom)(start, end)),
           transform = _rectPositionToCSSPro.transform,
           width = _rectPositionToCSSPro.width,
@@ -32798,12 +32789,81 @@ function () {
   }, {
     key: "hideSelectionBox",
     value: function hideSelectionBox() {
-      this.selectionAreaEl.classList.add('GraphViewer__SelectionBox--hide');
+      this.selectionAreaEl.classList.add("GraphViewer__SelectionBox--hide");
     }
   }, {
     key: "showSelectionBox",
     value: function showSelectionBox() {
-      this.selectionAreaEl.classList.remove('GraphViewer__SelectionBox--hide');
+      this.selectionAreaEl.classList.remove("GraphViewer__SelectionBox--hide");
+    }
+  }, {
+    key: "resetSelectionBoxArea",
+    value: function resetSelectionBoxArea() {
+      this.hideSelectionBox();
+      this.selectionAreaBox = {
+        x: 0,
+        y: 0,
+        endx: 0,
+        endy: 0,
+        initialized: false
+      };
+    }
+  }, {
+    key: "calculateCollisionsInsideSelectionArea",
+    value: function calculateCollisionsInsideSelectionArea(start, end) {
+      var _this$transposePositi = this.transposePositionToBoardWithOriginOffsetAndScale((0, _positionningRect2Dom.positionningRect2Dom)(start, end)),
+          x = _this$transposePositi.x,
+          y = _this$transposePositi.y,
+          width = _this$transposePositi.width,
+          height = _this$transposePositi.height; // TODO do not do this !!! // check at start selection and use dom selection after
+
+
+      var els = document.querySelectorAll('[draggable="true"]');
+      var selection = [];
+
+      for (var i = 0, l = els.length; i < l; i += 1) {
+        var element = els[i];
+        var elementPosition = {
+          x: +element.getAttribute("data-x"),
+          y: +element.getAttribute("data-y"),
+          width: +element.offsetWidth,
+          height: +element.offsetHeight
+        }; // TODO: Use QuadTree algo for faster check
+
+        var isCollied = elementPosition.x < x + width && elementPosition.x + elementPosition.width > x && elementPosition.y < y + height && elementPosition.y + elementPosition.height > y;
+
+        if (isCollied) {
+          selection.push(element);
+          element.classList.add("activate");
+        } else {
+          element.classList.remove("activate");
+        }
+      } // console.log([x, y, width, height], selection.length);
+
+
+      return selection;
+    }
+  }, {
+    key: "transposePositionToBoardWithOriginOffsetAndScale",
+    value: function transposePositionToBoardWithOriginOffsetAndScale(_ref) {
+      var _ref$x = _ref.x,
+          x = _ref$x === void 0 ? 0 : _ref$x,
+          _ref$y = _ref.y,
+          y = _ref$y === void 0 ? 0 : _ref$y,
+          _ref$width = _ref.width,
+          width = _ref$width === void 0 ? 0 : _ref$width,
+          _ref$height = _ref.height,
+          height = _ref$height === void 0 ? 0 : _ref$height;
+      x = (0, _positionningRect2Dom.getValueByScale)(x - this.transform.x, this.transform.k);
+      y = (0, _positionningRect2Dom.getValueByScale)(y - this.transform.y, this.transform.k);
+      width = width * (1 / this.transform.k);
+      height = height * (1 / this.transform.k);
+      return {
+        x: x,
+        y: y,
+        width: width,
+        height: height
+      };
     }
   }]);
 

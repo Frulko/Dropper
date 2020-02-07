@@ -43,6 +43,9 @@
   width: 100%;
   border: 1px solid black;
 }
+.node.activate {
+  background-color: rgba(255, 99, 71, 0.2);
+}
 
 .node--selected {
   background-color: dodgerblue;

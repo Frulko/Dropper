@@ -66,10 +66,6 @@ export default class DragNDrop {
 
     this.onKeyHandler = () => {};
 
-    window.setSelectionBox = (start, end) => {
-      this.setSelectionBox(start, end);
-    };
-
     this.update();
   }
 
@@ -224,7 +220,7 @@ export default class DragNDrop {
     if (!e.shiftKey) {
       //if normal gesture move
       this._startPosition = { ...this.transform };
-      this.onTranslate(e.deltaX * -1, e.deltaY * -1); // invert delta for natural scroll behavior
+      this.onTranslate(e.deltaX, e.deltaY); // invert delta for natural scroll behavior
       return;
     }
 
@@ -372,19 +368,12 @@ export default class DragNDrop {
     }
 
     // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
-
-    if (this.selectionAreaBox.x === event.x && this.selectionAreaBox.y === event.y) {
-      this.hideSelectionBox();
-
-      this.selectionAreaBox = {
-        x: 0,
-        y: 0,
-        endx: 0,
-        endy: 0,
-        initialized: false,
-      }
+    // TODO check if is stop on a node -- do not select and trigger it
+    const selectionIsAtSamePosition = (this.selectionAreaBox.x === event.x &&
+      this.selectionAreaBox.y === event.y);
+    if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
+      this.resetSelectionBoxArea();
     }
-
 
     this.unselectedNodes = [];
     this.posFirst = [0, 0];
@@ -392,27 +381,22 @@ export default class DragNDrop {
   }
 
   handleMouseMove(event) {
-
     if (this.mouseDown) {
-        
-        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
-        const { x, y } = this.selectionAreaBox;
-        const endX = event.x;
-        const endY = event.y;
-        if (x !== endX && y !== endY) {
-          this.showSelectionBox();
-          // if same pos do nothing
-          // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
-          // this.selectionAreaBox = { ...rectPos };
-          this.selectionAreaBox.endx = event.x;
-          this.selectionAreaBox.endy = event.y;
-          this.renderSelectionAreaBox();
-        }
-        /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
-
-
+      /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+      const { x, y } = this.selectionAreaBox;
+      const endX = event.x;
+      const endY = event.y;
+      if (x !== endX && y !== endY) {
+        this.showSelectionBox();
+        // if same pos do nothing
+        // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
+        // this.selectionAreaBox = { ...rectPos };
+        this.selectionAreaBox.endx = event.x;
+        this.selectionAreaBox.endy = event.y;
+        this.renderSelectionAreaBox();
+      }
+      /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
     }
-
 
     if (!this.mouseDown && !this.isDragging) {
       return;
@@ -437,7 +421,6 @@ export default class DragNDrop {
     // );
     // this.posFirst = [event.x, event.y];
     // this.onDragHandler.call(this, evt);
-
 
     if (this.draggingBoard) {
       const d = this.getDeltaPosition(event.x, event.y);
@@ -615,13 +598,16 @@ export default class DragNDrop {
     // this.selectionAreaEl.style.width = width;
     // this.selectionAreaEl.style.height = height;
 
-    const {x, y, endx, endy} = this.selectionAreaBox;
+    const { x, y, endx, endy } = this.selectionAreaBox;
 
-    this.setSelectionBox([x, y], [endx, endy]);
+    const selection = this.calculateCollisionsInsideSelectionArea([x, y], [endx, endy]);
+    this.updateSelectionBoxDOM([x, y], [endx, endy]);
   }
 
-  setSelectionBox(start, end) {
-    const { transform, width, height } = rectPositionToCSSProperties(positionningRect2Dom(start, end));
+  updateSelectionBoxDOM(start, end) {
+    const { transform, width, height } = rectPositionToCSSProperties(
+      positionningRect2Dom(start, end)
+    );
 
     this.selectionAreaEl.style.transform = transform;
     this.selectionAreaEl.style.width = width;
@@ -629,10 +615,87 @@ export default class DragNDrop {
   }
 
   hideSelectionBox() {
-    this.selectionAreaEl.classList.add('GraphViewer__SelectionBox--hide');
+    this.selectionAreaEl.classList.add("GraphViewer__SelectionBox--hide");
   }
 
   showSelectionBox() {
-    this.selectionAreaEl.classList.remove('GraphViewer__SelectionBox--hide');
+    this.selectionAreaEl.classList.remove("GraphViewer__SelectionBox--hide");
+  }
+
+  resetSelectionBoxArea() {
+    this.hideSelectionBox();
+
+    this.selectionAreaBox = {
+      x: 0,
+      y: 0,
+      endx: 0,
+      endy: 0,
+      initialized: false
+    };
+  }
+
+  calculateCollisionsInsideSelectionArea(start, end) {
+    const {
+      x,
+      y,
+      width,
+      height
+    } = this.transposePositionToBoardWithOriginOffsetAndScale(
+      positionningRect2Dom(start, end)
+    );
+
+    // TODO do not do this !!! // check at start selection and use dom selection after
+    const els = document.querySelectorAll('[draggable="true"]');
+
+    const selection = [];
+
+    for (let i = 0, l = els.length; i < l; i += 1) {
+      const element = els[i];
+      const elementPosition = {
+        x: +element.getAttribute("data-x"),
+        y: +element.getAttribute("data-y"),
+        width: +element.offsetWidth,
+        height: +element.offsetHeight
+      };
+
+
+
+      // TODO: Use QuadTree algo for faster check
+      const isCollied =
+        elementPosition.x < x + width &&
+        elementPosition.x + elementPosition.width > x &&
+        elementPosition.y < y + height &&
+        elementPosition.y + elementPosition.height > y;
+
+      if (isCollied) {
+        selection.push(element);
+        element.classList.add("activate");
+      } else {
+        element.classList.remove("activate");
+      }
+    }
+
+    // console.log([x, y, width, height], selection.length);
+    return selection;
+  }
+
+  transposePositionToBoardWithOriginOffsetAndScale({
+    x = 0,
+    y = 0,
+    width = 0,
+    height = 0
+  }) {
+
+    x = getValueByScale(x - this.transform.x, this.transform.k);
+    y = getValueByScale(y - this.transform.y, this.transform.k);
+    width = width * (1 / this.transform.k);
+    height = height * (1 / this.transform.k);
+
+    return {
+      x,
+      y,
+      width,
+      height
+    };
   }
 }

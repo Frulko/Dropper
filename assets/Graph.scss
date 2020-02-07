@@ -18,6 +18,7 @@
     background-color: rgba(tomato, .3);
     pointer-events: none;
     opacity: 1;
+    // transition: transform .05s ease-out;
     &--hide{
       opacity: 0;
     }
@@ -44,6 +45,10 @@
     margin-top: 10px;
     width: 100%;
     border: 1px solid black;
+  }
+
+  &.activate{
+    background-color: rgba(tomato, .2);
   }
 }
 
