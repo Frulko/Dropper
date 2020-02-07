@@ -63,6 +63,26 @@
 .App {
   width: 100%;
   height: 100vh;
+  display: flex;
+}
+
+.MainContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.LeftList {
+  background-color: rgba(50, 205, 50, 0.2);
+  width: 300px;
+  height: 100%;
+}
+
+.BottomList {
+  background-color: rgba(255, 165, 0, 0.2);
+  width: 100%;
+  height: 200px;
 }
 
 /*# sourceMappingURL=/dnd.e31bb0bc.css.map */

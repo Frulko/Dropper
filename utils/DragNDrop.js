@@ -146,6 +146,11 @@ export default class DragNDrop {
       false
     );
     this.container.addEventListener(
+      "drop",
+      this.handleDropEvent.bind(this),
+      false
+    );
+    this.container.addEventListener(
       "mousedown",
       this.handleMouseDown.bind(this),
       false
@@ -324,7 +329,7 @@ export default class DragNDrop {
     } else {
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       // if selection --> setting up xy pos,
-      this.selectionAreaBox.x = event.x;
+      this.selectionAreaBox.x = event.x; // take event.x + box offset of container pos
       this.selectionAreaBox.y = event.y;
       this.selectionAreaBox.initialized = true;
       // this.renderSelectionAreaBox();
@@ -340,6 +345,8 @@ export default class DragNDrop {
   handleMouseUp(event) {
     this.mouseDown = false;
     this.isDragging = false;
+
+
 
     this.isNode = this.checkIsNode(event.target);
     const delta = this.getDeltaPosition(event.x, event.y);
@@ -369,6 +376,7 @@ export default class DragNDrop {
 
     // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
     // TODO check if is stop on a node -- do not select and trigger it
+    // TODO DISABLE SELECTION IF DRAGGING
     const selectionIsAtSamePosition = (this.selectionAreaBox.x === event.x &&
       this.selectionAreaBox.y === event.y);
     if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
@@ -457,6 +465,28 @@ export default class DragNDrop {
 
     // this.onDragHandler.call(this, evt);
     // this.dragged.style.transform = `translate3d(${getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getValueByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
+  }
+
+  handleDropEvent(ev) {
+    ev.preventDefault();
+    // var data = event.dataTransfer.getData("text/plain");
+    // console.log(data);
+
+    if (ev.dataTransfer.items) {
+      // Use DataTransferItemList interface to access the file(s)
+      for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+        // If dropped items aren't files, reject them
+        if (ev.dataTransfer.items[i].kind === 'file') {
+          var file = ev.dataTransfer.items[i].getAsFile();
+          console.log('... file[' + i + '].name = ' + file.name);
+        }
+      }
+    } else {
+      // Use DataTransfer interface to access the file(s)
+      for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+        console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+      }
+    }
   }
 
   updateDOMTranslate(event) {
@@ -555,7 +585,7 @@ export default class DragNDrop {
     let k = this.transform.k;
     if (boundingBox.width < boundingBox.height) {
       // if landscape mode
-      k = (rect.height - padding) / boundingBox.height;
+      k = (rect.height - padding) / boundingBox.height; // need to take x,y position of rect
     } else {
       k = (rect.width - padding) / boundingBox.width;
     }
@@ -698,4 +728,15 @@ export default class DragNDrop {
       height
     };
   }
+
+  updateQuadTree() {
+    // clear() and populate insert()
+    // see if reference work and then update only the changed
+  }
+
+  collisionQuadTree() {
+
+  }
+
+
 }

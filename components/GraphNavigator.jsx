@@ -6,7 +6,7 @@ import '../assets/Graph.scss';
 const GraphNavigator = (props) => {
 
   const [connectables, setConnectables] = useState(props.connectables); 
-  const [boardOrigin, setBoardOrigin] = useState([300, 500]); 
+  const [boardOrigin, setBoardOrigin] = useState([0, 0]); 
   const [scaleFactor, setScaleFactor] = useState(1); 
 
   let indexedConnectables = {};

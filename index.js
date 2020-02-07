@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import GraphNavigator from './components/GraphNavigator';
 import './assets/App.scss';
 import fakeData from './connectables.json';
+import LeftList from './components/LeftList';
+import BottomList from './components/BottomList';
 const fakeConnectable = [
   {
     '@id': '/nodes/99',
@@ -53,7 +55,12 @@ const fakeConnectable = [
 const App = () => {
   return (
     <div className="App">
-      <GraphNavigator connectables={fakeData.connectables} />
+      <LeftList />
+      <div className="MainContainer">
+
+        <GraphNavigator connectables={fakeData.connectables} />
+        <BottomList />
+      </div>
     </div>
   );
 }

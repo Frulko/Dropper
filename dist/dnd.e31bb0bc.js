@@ -32353,6 +32353,7 @@ function () {
       this.container.addEventListener("dragstart", this.handleDragStartEvent.bind(this), false);
       this.container.addEventListener("dragend", this.handleDragEndEvent.bind(this), false);
       this.container.addEventListener("dragover", this.handleDragOverEvent.bind(this), false);
+      this.container.addEventListener("drop", this.handleDropEvent.bind(this), false);
       this.container.addEventListener("mousedown", this.handleMouseDown.bind(this), false);
       this.container.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
       this.container.addEventListener("mousemove", this.handleMouseMove.bind(this), false);
@@ -32494,7 +32495,8 @@ function () {
       } else {
         /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
         // if selection --> setting up xy pos,
-        this.selectionAreaBox.x = event.x;
+        this.selectionAreaBox.x = event.x; // take event.x + box offset of container pos
+
         this.selectionAreaBox.y = event.y;
         this.selectionAreaBox.initialized = true; // this.renderSelectionAreaBox();
 
@@ -32527,6 +32529,7 @@ function () {
         this.selectedNodes = [];
       } // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
       // TODO check if is stop on a node -- do not select and trigger it
+      // TODO DISABLE SELECTION IF DRAGGING
 
 
       var selectionIsAtSamePosition = this.selectionAreaBox.x === event.x && this.selectionAreaBox.y === event.y;
@@ -32620,6 +32623,28 @@ function () {
       // }, event)
       // this.onDragHandler.call(this, evt);
       // this.dragged.style.transform = `translate3d(${getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getValueByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
+    }
+  }, {
+    key: "handleDropEvent",
+    value: function handleDropEvent(ev) {
+      ev.preventDefault(); // var data = event.dataTransfer.getData("text/plain");
+      // console.log(data);
+
+      if (ev.dataTransfer.items) {
+        // Use DataTransferItemList interface to access the file(s)
+        for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+          // If dropped items aren't files, reject them
+          if (ev.dataTransfer.items[i].kind === 'file') {
+            var file = ev.dataTransfer.items[i].getAsFile();
+            console.log('... file[' + i + '].name = ' + file.name);
+          }
+        }
+      } else {
+        // Use DataTransfer interface to access the file(s)
+        for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+          console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+        }
+      }
     }
   }, {
     key: "updateDOMTranslate",
@@ -32725,7 +32750,7 @@ function () {
 
       if (boundingBox.width < boundingBox.height) {
         // if landscape mode
-        k = (rect.height - padding) / boundingBox.height;
+        k = (rect.height - padding) / boundingBox.height; // need to take x,y position of rect
       } else {
         k = (rect.width - padding) / boundingBox.width;
       }
@@ -32865,6 +32890,14 @@ function () {
         height: height
       };
     }
+  }, {
+    key: "updateQuadTree",
+    value: function updateQuadTree() {// clear() and populate insert()
+      // see if reference work and then update only the changed
+    }
+  }, {
+    key: "collisionQuadTree",
+    value: function collisionQuadTree() {}
   }]);
 
   return DragNDrop;
@@ -33438,7 +33471,7 @@ var GraphNavigator = function GraphNavigator(props) {
       connectables = _useState2[0],
       setConnectables = _useState2[1];
 
-  var _useState3 = (0, _react.useState)([300, 500]),
+  var _useState3 = (0, _react.useState)([0, 0]),
       _useState4 = _slicedToArray(_useState3, 2),
       boardOrigin = _useState4[0],
       setBoardOrigin = _useState4[1];
@@ -34530,7 +34563,69 @@ module.exports = {
     "isRoot": false
   }]
 };
-},{}],"index.js":[function(require,module,exports) {
+},{}],"components/LeftList.jsx":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _this = void 0;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = function _default() {
+  function dragstart_handler(ev) {
+    // On ajoute l'identifiant de l'élément cible à l'objet de transfert
+    console.log('drag start');
+    ev.dataTransfer.setData("text/plain", ev.target.innerText); // ev.dataTransfer.setData("text/plain", 'youplaboom');
+
+    ev.dataTransfer.dropEffect = "link";
+  }
+
+  return _react.default.createElement("div", {
+    className: "LeftList"
+  }, _react.default.createElement("ul", null, _react.default.createElement("li", {
+    draggable: "true",
+    onDragStart: dragstart_handler.bind(_this)
+  }, "Item 1"), _react.default.createElement("li", {
+    draggable: "true",
+    onDragStart: dragstart_handler.bind(_this)
+  }, "Item 2"), _react.default.createElement("li", {
+    draggable: "true",
+    onDragStart: dragstart_handler.bind(_this)
+  }, "Item 3"), _react.default.createElement("li", {
+    draggable: "true",
+    onDragStart: dragstart_handler.bind(_this)
+  }, "Item 4")));
+};
+
+exports.default = _default;
+},{"react":"node_modules/react/index.js"}],"components/BottomList.jsx":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = function _default() {
+  return _react.default.createElement("div", {
+    className: "BottomList"
+  }, _react.default.createElement("div", {
+    className: "BottomList__item"
+  }));
+};
+
+exports.default = _default;
+},{"react":"node_modules/react/index.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _react = _interopRequireDefault(require("react"));
@@ -34542,6 +34637,10 @@ var _GraphNavigator = _interopRequireDefault(require("./components/GraphNavigato
 require("./assets/App.scss");
 
 var _connectables = _interopRequireDefault(require("./connectables.json"));
+
+var _LeftList = _interopRequireDefault(require("./components/LeftList"));
+
+var _BottomList = _interopRequireDefault(require("./components/BottomList"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34592,13 +34691,15 @@ var fakeConnectable = [{
 var App = function App() {
   return _react.default.createElement("div", {
     className: "App"
+  }, _react.default.createElement(_LeftList.default, null), _react.default.createElement("div", {
+    className: "MainContainer"
   }, _react.default.createElement(_GraphNavigator.default, {
     connectables: _connectables.default.connectables
-  }));
+  }), _react.default.createElement(_BottomList.default, null)));
 };
 
 _reactDom.default.render(_react.default.createElement(App, null), document.querySelector('#root'));
-},{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js","./components/GraphNavigator":"components/GraphNavigator.jsx","./assets/App.scss":"assets/App.scss","./connectables.json":"connectables.json"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js","./components/GraphNavigator":"components/GraphNavigator.jsx","./assets/App.scss":"assets/App.scss","./connectables.json":"connectables.json","./components/LeftList":"components/LeftList.jsx","./components/BottomList":"components/BottomList.jsx"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
