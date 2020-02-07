@@ -32214,14 +32214,6 @@ exports.default = void 0;
 
 var _positionningRect2Dom = require("./positionningRect2Dom");
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
@@ -32229,6 +32221,14 @@ function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread n
 function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -32283,6 +32283,10 @@ function () {
     this.selectedNodes = [];
     this.unselectedNodes = [];
     this.draggingBoard = false;
+    this.containerOffset = {
+      x: 0,
+      y: 0
+    };
     console.log("--> constructor");
     var img = document.createElement("img");
     img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -32320,6 +32324,11 @@ function () {
       this.selectionAreaEl = document.createElement("div");
       this.selectionAreaEl.classList.add("GraphViewer__SelectionBox");
       this.container.appendChild(this.selectionAreaEl);
+      var rect = this.container.getBoundingClientRect();
+      this.containerOffset = {
+        x: rect.x,
+        y: rect.y
+      };
     }
   }, {
     key: "setOrigin",
@@ -32471,22 +32480,29 @@ function () {
         return;
       }
 
+      var _this$getPosFromEvent = this.getPosFromEvent(event.x, event.y),
+          _this$getPosFromEvent2 = _slicedToArray(_this$getPosFromEvent, 2),
+          evtX = _this$getPosFromEvent2[0],
+          evtY = _this$getPosFromEvent2[1];
+
       this.mouseDown = true;
-      this.posFirst = [event.x, event.y];
+      this.posFirst = [evtX, evtY];
       var dragObject = {
         first: true,
-        delta: this.getDeltaPosition(event.x, event.y)
+        delta: this.getDeltaPosition(evtX, evtY)
       };
       var nodeElement = this.checkIsNode(event.target);
 
       if (nodeElement) {
         this.dragged = nodeElement;
+        var draggedRect = this.dragged.getBoundingClientRect();
 
-        var _this$dragged$getBoun = this.dragged.getBoundingClientRect(),
-            x = _this$dragged$getBoun.x,
-            y = _this$dragged$getBoun.y;
+        var _this$getPosFromEvent3 = this.getPosFromEvent(draggedRect.x, draggedRect.y),
+            _this$getPosFromEvent4 = _slicedToArray(_this$getPosFromEvent3, 2),
+            x = _this$getPosFromEvent4[0],
+            y = _this$getPosFromEvent4[1];
 
-        this.draggedClickPositionOffset = [event.x - x, event.y - y];
+        this.draggedClickPositionOffset = [evtX - x, evtY - y];
         this.originalPosition = [x, y];
         dragObject.node = true;
         dragObject.target = nodeElement;
@@ -32495,9 +32511,9 @@ function () {
       } else {
         /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
         // if selection --> setting up xy pos,
-        this.selectionAreaBox.x = event.x; // take event.x + box offset of container pos
+        this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
 
-        this.selectionAreaBox.y = event.y;
+        this.selectionAreaBox.y = evtY;
         this.selectionAreaBox.initialized = true; // this.renderSelectionAreaBox();
 
         /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
@@ -32513,8 +32529,14 @@ function () {
     value: function handleMouseUp(event) {
       this.mouseDown = false;
       this.isDragging = false;
+
+      var _this$getPosFromEvent5 = this.getPosFromEvent(event.x, event.y),
+          _this$getPosFromEvent6 = _slicedToArray(_this$getPosFromEvent5, 2),
+          evtX = _this$getPosFromEvent6[0],
+          evtY = _this$getPosFromEvent6[1];
+
       this.isNode = this.checkIsNode(event.target);
-      var delta = this.getDeltaPosition(event.x, event.y);
+      var delta = this.getDeltaPosition(evtX, evtY);
       var evt = this.updateEventObject({
         target: this.isNode,
         last: true,
@@ -32532,7 +32554,7 @@ function () {
       // TODO DISABLE SELECTION IF DRAGGING
 
 
-      var selectionIsAtSamePosition = this.selectionAreaBox.x === event.x && this.selectionAreaBox.y === event.y;
+      var selectionIsAtSamePosition = this.selectionAreaBox.x === evtX && this.selectionAreaBox.y === evtY;
 
       if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
         this.resetSelectionBoxArea();
@@ -32545,21 +32567,26 @@ function () {
   }, {
     key: "handleMouseMove",
     value: function handleMouseMove(event) {
+      var _this$getPosFromEvent7 = this.getPosFromEvent(event.x, event.y),
+          _this$getPosFromEvent8 = _slicedToArray(_this$getPosFromEvent7, 2),
+          evtX = _this$getPosFromEvent8[0],
+          evtY = _this$getPosFromEvent8[1];
+
       if (this.mouseDown) {
         /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
         var _this$selectionAreaBo = this.selectionAreaBox,
             x = _this$selectionAreaBo.x,
             y = _this$selectionAreaBo.y;
-        var endX = event.x;
-        var endY = event.y;
+        var endX = evtX;
+        var endY = evtY;
 
         if (x !== endX && y !== endY) {
           this.showSelectionBox(); // if same pos do nothing
           // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
           // this.selectionAreaBox = { ...rectPos };
 
-          this.selectionAreaBox.endx = event.x;
-          this.selectionAreaBox.endy = event.y;
+          this.selectionAreaBox.endx = evtX;
+          this.selectionAreaBox.endy = evtY;
           this.renderSelectionAreaBox();
         }
         /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
@@ -32588,7 +32615,7 @@ function () {
 
 
       if (this.draggingBoard) {
-        var d = this.getDeltaPosition(event.x, event.y);
+        var d = this.getDeltaPosition(evtX, evtY);
         this.onTranslate(d[0], d[1]);
       }
     }
@@ -32628,28 +32655,42 @@ function () {
     key: "handleDropEvent",
     value: function handleDropEvent(ev) {
       ev.preventDefault(); // var data = event.dataTransfer.getData("text/plain");
-      // console.log(data);
+
+      var items = ev.dataTransfer.items;
 
       if (ev.dataTransfer.items) {
         // Use DataTransferItemList interface to access the file(s)
         for (var i = 0; i < ev.dataTransfer.items.length; i++) {
           // If dropped items aren't files, reject them
-          if (ev.dataTransfer.items[i].kind === 'file') {
+          if (ev.dataTransfer.items[i].kind === "file") {
             var file = ev.dataTransfer.items[i].getAsFile();
-            console.log('... file[' + i + '].name = ' + file.name);
+            console.log("... file[" + i + "].name = " + file.name);
           }
         }
       } else {
         // Use DataTransfer interface to access the file(s)
         for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-          console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+          console.log("... file[" + i + "].name = " + ev.dataTransfer.files[i].name);
         }
       }
     }
   }, {
+    key: "getPosFromEvent",
+    value: function getPosFromEvent(x, y) {
+      // console.log(this.containerOffset.y, y);
+      var evtX = x - this.containerOffset.x;
+      var evtY = y - this.containerOffset.y;
+      return [evtX, evtY];
+    }
+  }, {
     key: "updateDOMTranslate",
     value: function updateDOMTranslate(event) {
-      var _this$getPosition = this.getPosition(event.x, event.y),
+      var _this$getPosFromEvent9 = this.getPosFromEvent(event.x, event.y),
+          _this$getPosFromEvent10 = _slicedToArray(_this$getPosFromEvent9, 2),
+          evtX = _this$getPosFromEvent10[0],
+          evtY = _this$getPosFromEvent10[1];
+
+      var _this$getPosition = this.getPosition(evtX, evtY),
           _this$getPosition2 = _slicedToArray(_this$getPosition, 2),
           posX = _this$getPosition2[0],
           posY = _this$getPosition2[1];
@@ -32802,6 +32843,8 @@ function () {
   }, {
     key: "updateSelectionBoxDOM",
     value: function updateSelectionBoxDOM(start, end) {
+      console.log(start, this.containerOffset.x);
+
       var _rectPositionToCSSPro = (0, _positionningRect2Dom.rectPositionToCSSProperties)((0, _positionningRect2Dom.positionningRect2Dom)(start, end)),
           transform = _rectPositionToCSSPro.transform,
           width = _rectPositionToCSSPro.width,
@@ -34587,8 +34630,11 @@ var _default = function _default() {
   }
 
   return _react.default.createElement("div", {
+    className: "LeftList__Container Left_List__Container--disable"
+  }, _react.default.createElement("ul", {
     className: "LeftList"
-  }, _react.default.createElement("ul", null, _react.default.createElement("li", {
+  }, _react.default.createElement("li", {
+    className: "LeftList__Item",
     draggable: "true",
     onDragStart: dragstart_handler.bind(_this)
   }, "Item 1"), _react.default.createElement("li", {
@@ -34727,7 +34773,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55299" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54162" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

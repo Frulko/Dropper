@@ -1,11 +1,15 @@
 
-*, body{
-  font-size: 16px;
+html{
+  font-size: 100%;
+  @media (max-width: (800px)) {
+    // font-size: 80%;
+  }
+}
+
+*{
   overscroll-behavior: none;
   box-sizing: border-box;
 }
-
-
 
 .App{
   width: 100%;
@@ -22,11 +26,18 @@
 
 .LeftList{
   background-color: rgba(limegreen, .2);
-  width: 300px;
+  width: 18.75rem;
   height: 100%;
+  flex: none;
+  font-size: 2rem;
+
+  @media (max-width: (800px)) {
+    width: 10rem;
+  }
 }
 .BottomList{
   background-color: rgba(orange, .2);
   width: 100%;
-  height: 200px;
+  height: 12.5rem;
+  flex: none;
 }

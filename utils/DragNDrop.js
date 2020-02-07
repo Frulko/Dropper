@@ -52,6 +52,11 @@ export default class DragNDrop {
 
     this.draggingBoard = false;
 
+    this.containerOffset = {
+      x: 0,
+      y: 0
+    };
+
     console.log("--> constructor");
 
     var img = document.createElement("img");
@@ -91,6 +96,12 @@ export default class DragNDrop {
     this.selectionAreaEl.classList.add("GraphViewer__SelectionBox");
 
     this.container.appendChild(this.selectionAreaEl);
+
+    const rect = this.container.getBoundingClientRect();
+    this.containerOffset = {
+      x: rect.x,
+      y: rect.y
+    };
   }
 
   setOrigin(origin) {
@@ -306,19 +317,23 @@ export default class DragNDrop {
       return;
     }
 
+    const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
+
     this.mouseDown = true;
-    this.posFirst = [event.x, event.y];
+    this.posFirst = [evtX, evtY];
 
     const dragObject = {
       first: true,
-      delta: this.getDeltaPosition(event.x, event.y)
+      delta: this.getDeltaPosition(evtX, evtY)
     };
 
     const nodeElement = this.checkIsNode(event.target);
     if (nodeElement) {
       this.dragged = nodeElement;
-      const { x, y } = this.dragged.getBoundingClientRect();
-      this.draggedClickPositionOffset = [event.x - x, event.y - y];
+      const draggedRect = this.dragged.getBoundingClientRect();
+      const [x, y] = this.getPosFromEvent(draggedRect.x, draggedRect.y);
+
+      this.draggedClickPositionOffset = [evtX - x, evtY - y];
       this.originalPosition = [x, y];
 
       dragObject.node = true;
@@ -329,8 +344,8 @@ export default class DragNDrop {
     } else {
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       // if selection --> setting up xy pos,
-      this.selectionAreaBox.x = event.x; // take event.x + box offset of container pos
-      this.selectionAreaBox.y = event.y;
+      this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
+      this.selectionAreaBox.y = evtY;
       this.selectionAreaBox.initialized = true;
       // this.renderSelectionAreaBox();
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
@@ -346,10 +361,10 @@ export default class DragNDrop {
     this.mouseDown = false;
     this.isDragging = false;
 
-
+    const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
 
     this.isNode = this.checkIsNode(event.target);
-    const delta = this.getDeltaPosition(event.x, event.y);
+    const delta = this.getDeltaPosition(evtX, evtY);
     const evt = this.updateEventObject(
       {
         target: this.isNode,
@@ -377,8 +392,8 @@ export default class DragNDrop {
     // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
     // TODO check if is stop on a node -- do not select and trigger it
     // TODO DISABLE SELECTION IF DRAGGING
-    const selectionIsAtSamePosition = (this.selectionAreaBox.x === event.x &&
-      this.selectionAreaBox.y === event.y);
+    const selectionIsAtSamePosition =
+      this.selectionAreaBox.x === evtX && this.selectionAreaBox.y === evtY;
     if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
       this.resetSelectionBoxArea();
     }
@@ -389,18 +404,21 @@ export default class DragNDrop {
   }
 
   handleMouseMove(event) {
+    const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
+
     if (this.mouseDown) {
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       const { x, y } = this.selectionAreaBox;
-      const endX = event.x;
-      const endY = event.y;
+
+      const endX = evtX;
+      const endY = evtY;
       if (x !== endX && y !== endY) {
         this.showSelectionBox();
         // if same pos do nothing
         // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
         // this.selectionAreaBox = { ...rectPos };
-        this.selectionAreaBox.endx = event.x;
-        this.selectionAreaBox.endy = event.y;
+        this.selectionAreaBox.endx = evtX;
+        this.selectionAreaBox.endy = evtY;
         this.renderSelectionAreaBox();
       }
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
@@ -431,7 +449,7 @@ export default class DragNDrop {
     // this.onDragHandler.call(this, evt);
 
     if (this.draggingBoard) {
-      const d = this.getDeltaPosition(event.x, event.y);
+      const d = this.getDeltaPosition(evtX, evtY);
       this.onTranslate(d[0], d[1]);
     }
   }
@@ -470,27 +488,39 @@ export default class DragNDrop {
   handleDropEvent(ev) {
     ev.preventDefault();
     // var data = event.dataTransfer.getData("text/plain");
-    // console.log(data);
+    const items = ev.dataTransfer.items;
 
     if (ev.dataTransfer.items) {
       // Use DataTransferItemList interface to access the file(s)
       for (var i = 0; i < ev.dataTransfer.items.length; i++) {
         // If dropped items aren't files, reject them
-        if (ev.dataTransfer.items[i].kind === 'file') {
+        if (ev.dataTransfer.items[i].kind === "file") {
           var file = ev.dataTransfer.items[i].getAsFile();
-          console.log('... file[' + i + '].name = ' + file.name);
+          console.log("... file[" + i + "].name = " + file.name);
         }
       }
     } else {
       // Use DataTransfer interface to access the file(s)
       for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-        console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+        console.log(
+          "... file[" + i + "].name = " + ev.dataTransfer.files[i].name
+        );
       }
     }
   }
 
+  getPosFromEvent(x, y) {
+    // console.log(this.containerOffset.y, y);
+    const evtX = x - this.containerOffset.x;
+    const evtY = y - this.containerOffset.y;
+    return [evtX, evtY]
+  }
+
   updateDOMTranslate(event) {
-    const [posX, posY] = this.getPosition(event.x, event.y);
+    const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
+
+
+    const [posX, posY] = this.getPosition(evtX, evtY);
 
     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       const dragged = this.selectedNodes[i];
@@ -630,11 +660,18 @@ export default class DragNDrop {
 
     const { x, y, endx, endy } = this.selectionAreaBox;
 
-    const selection = this.calculateCollisionsInsideSelectionArea([x, y], [endx, endy]);
+    const selection = this.calculateCollisionsInsideSelectionArea(
+      [x, y],
+      [endx, endy]
+    );
+
+
+
     this.updateSelectionBoxDOM([x, y], [endx, endy]);
   }
 
   updateSelectionBoxDOM(start, end) {
+    console.log(start, this.containerOffset.x);
     const { transform, width, height } = rectPositionToCSSProperties(
       positionningRect2Dom(start, end)
     );
@@ -688,8 +725,6 @@ export default class DragNDrop {
         height: +element.offsetHeight
       };
 
-
-
       // TODO: Use QuadTree algo for faster check
       const isCollied =
         elementPosition.x < x + width &&
@@ -715,7 +750,6 @@ export default class DragNDrop {
     width = 0,
     height = 0
   }) {
-
     x = getValueByScale(x - this.transform.x, this.transform.k);
     y = getValueByScale(y - this.transform.y, this.transform.k);
     width = width * (1 / this.transform.k);
@@ -734,9 +768,5 @@ export default class DragNDrop {
     // see if reference work and then update only the changed
   }
 
-  collisionQuadTree() {
-
-  }
-
-
+  collisionQuadTree() {}
 }

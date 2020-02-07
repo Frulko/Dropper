@@ -12,9 +12,9 @@ export default () => {
    }
 
   return (
-    <div className="LeftList">
-      <ul>
-        <li draggable="true" onDragStart={dragstart_handler.bind(this)}>Item 1</li>
+    <div className="LeftList__Container Left_List__Container--disable">
+      <ul className="LeftList">
+        <li className="LeftList__Item" draggable="true" onDragStart={dragstart_handler.bind(this)}>Item 1</li>
         <li draggable="true" onDragStart={dragstart_handler.bind(this)}>Item 2</li>
         <li draggable="true" onDragStart={dragstart_handler.bind(this)}>Item 3</li>
         <li draggable="true" onDragStart={dragstart_handler.bind(this)}>Item 4</li>
