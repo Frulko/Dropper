@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import GraphNavigator from './components/GraphNavigator';
 import './assets/App.scss';
-
+import fakeData from './connectables.json';
 const fakeConnectable = [
   {
     '@id': '/nodes/99',
@@ -53,7 +53,7 @@ const fakeConnectable = [
 const App = () => {
   return (
     <div className="App">
-      <GraphNavigator connectables={fakeConnectable} />
+      <GraphNavigator connectables={fakeData.connectables} />
     </div>
   );
 }

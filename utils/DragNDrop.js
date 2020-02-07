@@ -518,9 +518,18 @@ export default class DragNDrop {
 
     for (let i = 0, l = els.length; i < l; i += 1) {
       const b = els[i].getBoundingClientRect();
+      // const rect = {
+      //   x: +els[i].getAttribute('data-x'),
+      //   y: +els[i].getAttribute('data-y'),
+      //   width: b.width * (1/this.transform.k),
+      //   height: b.height * (1/this.transform.k)
+      // };
+
+      const l =  (b.left - this.transform.x) * (1/this.transform.k);
+      const t =  (b.top - this.transform.y) * (1/this.transform.k)
       const rect = {
-        x: +els[i].getAttribute('data-x'),
-        y: +els[i].getAttribute('data-y'),
+        x: l,
+        y: t,
         width: b.width * (1/this.transform.k),
         height: b.height * (1/this.transform.k)
       };

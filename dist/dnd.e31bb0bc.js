@@ -32222,10 +32222,19 @@ function () {
       };
 
       for (var i = 0, l = els.length; i < l; i += 1) {
-        var b = els[i].getBoundingClientRect();
+        var b = els[i].getBoundingClientRect(); // const rect = {
+        //   x: +els[i].getAttribute('data-x'),
+        //   y: +els[i].getAttribute('data-y'),
+        //   width: b.width * (1/this.transform.k),
+        //   height: b.height * (1/this.transform.k)
+        // };
+
+        var _l = (b.left - this.transform.x) * (1 / this.transform.k);
+
+        var t = (b.top - this.transform.y) * (1 / this.transform.k);
         var _rect = {
-          x: +els[i].getAttribute('data-x'),
-          y: +els[i].getAttribute('data-y'),
+          x: _l,
+          y: t,
           width: b.width * (1 / this.transform.k),
           height: b.height * (1 / this.transform.k)
         }; // console.log('w', rect.width, rect.width * (1/this.transform.k))
@@ -32856,7 +32865,7 @@ var GraphNavigator = function GraphNavigator(props) {
       boardOrigin = _useState4[0],
       setBoardOrigin = _useState4[1];
 
-  var _useState5 = (0, _react.useState)(0.5),
+  var _useState5 = (0, _react.useState)(1),
       _useState6 = _slicedToArray(_useState5, 2),
       scaleFactor = _useState6[0],
       setScaleFactor = _useState6[1];
@@ -32917,7 +32926,1033 @@ var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/css-loader.js"}],"index.js":[function(require,module,exports) {
+},{"_css_loader":"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/css-loader.js"}],"connectables.json":[function(require,module,exports) {
+module.exports = {
+  "connectables": [{
+    "@id": "/nodes/1",
+    "@type": "Node",
+    "label": "/labels/1",
+    "id": 1,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 70,
+    "posY": 306,
+    "posZ": 1464,
+    "outputLinks": [{
+      "@id": "/links/1",
+      "@type": "Link",
+      "id": 1,
+      "from": "/nodes/1",
+      "to": "/nodes/2",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 70,
+      "y": 306
+    },
+    "isRoot": true
+  }, {
+    "@id": "/nodes/2",
+    "@type": "Node",
+    "label": "/labels/15",
+    "id": 2,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 204,
+    "posY": 309,
+    "posZ": 1463,
+    "outputLinks": [{
+      "@id": "/links/4",
+      "@type": "Link",
+      "id": 4,
+      "from": "/nodes/2",
+      "to": "/key_instances/5",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/1",
+      "@type": "Link",
+      "id": 1,
+      "from": "/nodes/1",
+      "to": "/nodes/2",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 204,
+      "y": 309
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/3",
+    "@type": "Node",
+    "label": "/labels/4",
+    "id": 3,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 483,
+    "posY": 188,
+    "posZ": 1441,
+    "outputLinks": [{
+      "@id": "/links/585",
+      "@type": "Link",
+      "id": 585,
+      "from": "/nodes/3",
+      "to": "/nodes/10",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/2",
+      "@type": "Link",
+      "id": 2,
+      "from": "/key_instances/5",
+      "to": "/nodes/3",
+      "dataKeyValue": "/data_key_values/1"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 483,
+      "y": 188
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/4",
+    "@type": "Node",
+    "label": "/labels/3",
+    "id": 4,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 492,
+    "posY": 496,
+    "posZ": 1432,
+    "outputLinks": [{
+      "@id": "/links/602",
+      "@type": "Link",
+      "id": 602,
+      "from": "/nodes/4",
+      "to": "/key_instances/21",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/3",
+      "@type": "Link",
+      "id": 3,
+      "from": "/key_instances/5",
+      "to": "/nodes/4",
+      "dataKeyValue": "/data_key_values/2"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 492,
+      "y": 496
+    },
+    "isRoot": false
+  }, {
+    "@id": "/key_instances/5",
+    "@type": "KeyInstance",
+    "dataKey": "/data_keys/1",
+    "id": 5,
+    "name": "KeyInstanceOf1",
+    "description": null,
+    "color": null,
+    "posX": 356,
+    "posY": 353,
+    "posZ": 1462,
+    "outputLinks": [{
+      "@id": "/links/2",
+      "@type": "Link",
+      "id": 2,
+      "from": "/key_instances/5",
+      "to": "/nodes/3",
+      "dataKeyValue": "/data_key_values/1"
+    }, {
+      "@id": "/links/3",
+      "@type": "Link",
+      "id": 3,
+      "from": "/key_instances/5",
+      "to": "/nodes/4",
+      "dataKeyValue": "/data_key_values/2"
+    }],
+    "inputLinks": [{
+      "@id": "/links/4",
+      "@type": "Link",
+      "id": 4,
+      "from": "/nodes/2",
+      "to": "/key_instances/5",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 356,
+      "y": 353
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/10",
+    "@type": "Node",
+    "label": "/labels/5",
+    "id": 10,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 655,
+    "posY": 179,
+    "posZ": 1438,
+    "outputLinks": [{
+      "@id": "/links/25",
+      "@type": "Link",
+      "id": 25,
+      "from": "/nodes/10",
+      "to": "/key_instances/26",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/585",
+      "@type": "Link",
+      "id": 585,
+      "from": "/nodes/3",
+      "to": "/nodes/10",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 655,
+      "y": 179
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/18",
+    "@type": "Node",
+    "label": "/labels/6",
+    "id": 18,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 813,
+    "posY": 410,
+    "posZ": 1434,
+    "outputLinks": [{
+      "@id": "/links/36",
+      "@type": "Link",
+      "id": 36,
+      "from": "/nodes/18",
+      "to": "/key_instances/35",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/17",
+      "@type": "Link",
+      "id": 17,
+      "from": "/key_instances/21",
+      "to": "/nodes/18",
+      "dataKeyValue": "/data_key_values/3"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 813,
+      "y": 410
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/19",
+    "@type": "Node",
+    "label": "/labels/8",
+    "id": 19,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 808,
+    "posY": 665,
+    "posZ": 1436,
+    "outputLinks": [{
+      "@id": "/links/38",
+      "@type": "Link",
+      "id": 38,
+      "from": "/nodes/19",
+      "to": "/key_instances/35",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/19",
+      "@type": "Link",
+      "id": 19,
+      "from": "/key_instances/21",
+      "to": "/nodes/19",
+      "dataKeyValue": "/data_key_values/5"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 808,
+      "y": 665
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/20",
+    "@type": "Node",
+    "label": "/labels/7",
+    "id": 20,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 813,
+    "posY": 525,
+    "posZ": 1435,
+    "outputLinks": [{
+      "@id": "/links/37",
+      "@type": "Link",
+      "id": 37,
+      "from": "/nodes/20",
+      "to": "/key_instances/35",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/18",
+      "@type": "Link",
+      "id": 18,
+      "from": "/key_instances/21",
+      "to": "/nodes/20",
+      "dataKeyValue": "/data_key_values/4"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 813,
+      "y": 525
+    },
+    "isRoot": false
+  }, {
+    "@id": "/key_instances/21",
+    "@type": "KeyInstance",
+    "dataKey": "/data_keys/2",
+    "id": 21,
+    "name": "KeyInstanceOf2",
+    "description": null,
+    "color": null,
+    "posX": 629,
+    "posY": 532,
+    "posZ": 1437,
+    "outputLinks": [{
+      "@id": "/links/17",
+      "@type": "Link",
+      "id": 17,
+      "from": "/key_instances/21",
+      "to": "/nodes/18",
+      "dataKeyValue": "/data_key_values/3"
+    }, {
+      "@id": "/links/18",
+      "@type": "Link",
+      "id": 18,
+      "from": "/key_instances/21",
+      "to": "/nodes/20",
+      "dataKeyValue": "/data_key_values/4"
+    }, {
+      "@id": "/links/19",
+      "@type": "Link",
+      "id": 19,
+      "from": "/key_instances/21",
+      "to": "/nodes/19",
+      "dataKeyValue": "/data_key_values/5"
+    }],
+    "inputLinks": [{
+      "@id": "/links/602",
+      "@type": "Link",
+      "id": 602,
+      "from": "/nodes/4",
+      "to": "/key_instances/21",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 629,
+      "y": 532
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/23",
+    "@type": "Node",
+    "label": "/labels/9",
+    "id": 23,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 942,
+    "posY": 52,
+    "posZ": 1424,
+    "outputLinks": [{
+      "@id": "/links/30",
+      "@type": "Link",
+      "id": 30,
+      "from": "/nodes/23",
+      "to": "/key_instances/31",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/22",
+      "@type": "Link",
+      "id": 22,
+      "from": "/key_instances/26",
+      "to": "/nodes/23",
+      "dataKeyValue": "/data_key_values/3"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 942,
+      "y": 52
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/24",
+    "@type": "Node",
+    "label": "/labels/8",
+    "id": 24,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 980,
+    "posY": 290,
+    "posZ": 1428,
+    "outputLinks": [{
+      "@id": "/links/32",
+      "@type": "Link",
+      "id": 32,
+      "from": "/nodes/24",
+      "to": "/key_instances/31",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/24",
+      "@type": "Link",
+      "id": 24,
+      "from": "/key_instances/26",
+      "to": "/nodes/24",
+      "dataKeyValue": "/data_key_values/5"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 980,
+      "y": 290
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/25",
+    "@type": "Node",
+    "label": "/labels/7",
+    "id": 25,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 980,
+    "posY": 175,
+    "posZ": 1427,
+    "outputLinks": [{
+      "@id": "/links/31",
+      "@type": "Link",
+      "id": 31,
+      "from": "/nodes/25",
+      "to": "/key_instances/31",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/23",
+      "@type": "Link",
+      "id": 23,
+      "from": "/key_instances/26",
+      "to": "/nodes/25",
+      "dataKeyValue": "/data_key_values/4"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 980,
+      "y": 175
+    },
+    "isRoot": false
+  }, {
+    "@id": "/key_instances/26",
+    "@type": "KeyInstance",
+    "dataKey": "/data_keys/2",
+    "id": 26,
+    "name": "KeyInstanceOf2",
+    "description": null,
+    "color": null,
+    "posX": 817,
+    "posY": 214,
+    "posZ": 1433,
+    "outputLinks": [{
+      "@id": "/links/22",
+      "@type": "Link",
+      "id": 22,
+      "from": "/key_instances/26",
+      "to": "/nodes/23",
+      "dataKeyValue": "/data_key_values/3"
+    }, {
+      "@id": "/links/23",
+      "@type": "Link",
+      "id": 23,
+      "from": "/key_instances/26",
+      "to": "/nodes/25",
+      "dataKeyValue": "/data_key_values/4"
+    }, {
+      "@id": "/links/24",
+      "@type": "Link",
+      "id": 24,
+      "from": "/key_instances/26",
+      "to": "/nodes/24",
+      "dataKeyValue": "/data_key_values/5"
+    }],
+    "inputLinks": [{
+      "@id": "/links/25",
+      "@type": "Link",
+      "id": 25,
+      "from": "/nodes/10",
+      "to": "/key_instances/26",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 817,
+      "y": 214
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/27",
+    "@type": "Node",
+    "label": "/labels/10",
+    "id": 27,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1251,
+    "posY": 66,
+    "posZ": 735,
+    "outputLinks": [{
+      "@id": "/links/45",
+      "@type": "Link",
+      "id": 45,
+      "from": "/nodes/27",
+      "to": "/nodes/40",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/27",
+      "@type": "Link",
+      "id": 27,
+      "from": "/key_instances/31",
+      "to": "/nodes/27",
+      "dataKeyValue": "/data_key_values/6"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1251,
+      "y": 66
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/28",
+    "@type": "Node",
+    "label": "/labels/13",
+    "id": 28,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1251,
+    "posY": 296,
+    "posZ": 738,
+    "outputLinks": [{
+      "@id": "/links/47",
+      "@type": "Link",
+      "id": 47,
+      "from": "/nodes/28",
+      "to": "/nodes/40",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/29",
+      "@type": "Link",
+      "id": 29,
+      "from": "/key_instances/31",
+      "to": "/nodes/28",
+      "dataKeyValue": "/data_key_values/8"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1251,
+      "y": 296
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/29",
+    "@type": "Node",
+    "label": "/labels/11",
+    "id": 29,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1251,
+    "posY": 181,
+    "posZ": 1519,
+    "outputLinks": [{
+      "@id": "/links/46",
+      "@type": "Link",
+      "id": 46,
+      "from": "/nodes/29",
+      "to": "/nodes/40",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/28",
+      "@type": "Link",
+      "id": 28,
+      "from": "/key_instances/31",
+      "to": "/nodes/29",
+      "dataKeyValue": "/data_key_values/7"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1251,
+      "y": 181
+    },
+    "isRoot": false
+  }, {
+    "@id": "/key_instances/31",
+    "@type": "KeyInstance",
+    "dataKey": "/data_keys/3",
+    "id": 31,
+    "name": "KeyInstanceOf3",
+    "description": null,
+    "color": null,
+    "posX": 1130,
+    "posY": 209,
+    "posZ": 1426,
+    "outputLinks": [{
+      "@id": "/links/27",
+      "@type": "Link",
+      "id": 27,
+      "from": "/key_instances/31",
+      "to": "/nodes/27",
+      "dataKeyValue": "/data_key_values/6"
+    }, {
+      "@id": "/links/28",
+      "@type": "Link",
+      "id": 28,
+      "from": "/key_instances/31",
+      "to": "/nodes/29",
+      "dataKeyValue": "/data_key_values/7"
+    }, {
+      "@id": "/links/29",
+      "@type": "Link",
+      "id": 29,
+      "from": "/key_instances/31",
+      "to": "/nodes/28",
+      "dataKeyValue": "/data_key_values/8"
+    }],
+    "inputLinks": [{
+      "@id": "/links/30",
+      "@type": "Link",
+      "id": 30,
+      "from": "/nodes/23",
+      "to": "/key_instances/31",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/31",
+      "@type": "Link",
+      "id": 31,
+      "from": "/nodes/25",
+      "to": "/key_instances/31",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/32",
+      "@type": "Link",
+      "id": 32,
+      "from": "/nodes/24",
+      "to": "/key_instances/31",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1130,
+      "y": 209
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/32",
+    "@type": "Node",
+    "label": "/labels/16",
+    "id": 32,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1126,
+    "posY": 671,
+    "posZ": 1431,
+    "outputLinks": [{
+      "@id": "/links/55",
+      "@type": "Link",
+      "id": 55,
+      "from": "/nodes/32",
+      "to": "/nodes/45",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/35",
+      "@type": "Link",
+      "id": 35,
+      "from": "/key_instances/35",
+      "to": "/nodes/32",
+      "dataKeyValue": "/data_key_values/8"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1126,
+      "y": 671
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/33",
+    "@type": "Node",
+    "label": "/labels/15",
+    "id": 33,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1122,
+    "posY": 416,
+    "posZ": 1425,
+    "outputLinks": [{
+      "@id": "/links/53",
+      "@type": "Link",
+      "id": 53,
+      "from": "/nodes/33",
+      "to": "/nodes/45",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/33",
+      "@type": "Link",
+      "id": 33,
+      "from": "/key_instances/35",
+      "to": "/nodes/33",
+      "dataKeyValue": "/data_key_values/6"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1122,
+      "y": 416
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/34",
+    "@type": "Node",
+    "label": "/labels/11",
+    "id": 34,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1122,
+    "posY": 531,
+    "posZ": 1430,
+    "outputLinks": [{
+      "@id": "/links/54",
+      "@type": "Link",
+      "id": 54,
+      "from": "/nodes/34",
+      "to": "/nodes/45",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/34",
+      "@type": "Link",
+      "id": 34,
+      "from": "/key_instances/35",
+      "to": "/nodes/34",
+      "dataKeyValue": "/data_key_values/7"
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1122,
+      "y": 531
+    },
+    "isRoot": false
+  }, {
+    "@id": "/key_instances/35",
+    "@type": "KeyInstance",
+    "dataKey": "/data_keys/3",
+    "id": 35,
+    "name": "KeyInstanceOf3",
+    "description": null,
+    "color": null,
+    "posX": 972,
+    "posY": 566,
+    "posZ": 1429,
+    "outputLinks": [{
+      "@id": "/links/33",
+      "@type": "Link",
+      "id": 33,
+      "from": "/key_instances/35",
+      "to": "/nodes/33",
+      "dataKeyValue": "/data_key_values/6"
+    }, {
+      "@id": "/links/34",
+      "@type": "Link",
+      "id": 34,
+      "from": "/key_instances/35",
+      "to": "/nodes/34",
+      "dataKeyValue": "/data_key_values/7"
+    }, {
+      "@id": "/links/35",
+      "@type": "Link",
+      "id": 35,
+      "from": "/key_instances/35",
+      "to": "/nodes/32",
+      "dataKeyValue": "/data_key_values/8"
+    }],
+    "inputLinks": [{
+      "@id": "/links/36",
+      "@type": "Link",
+      "id": 36,
+      "from": "/nodes/18",
+      "to": "/key_instances/35",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/37",
+      "@type": "Link",
+      "id": 37,
+      "from": "/nodes/20",
+      "to": "/key_instances/35",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/38",
+      "@type": "Link",
+      "id": 38,
+      "from": "/nodes/19",
+      "to": "/key_instances/35",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 972,
+      "y": 566
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/40",
+    "@type": "Node",
+    "label": "/labels/17",
+    "id": 40,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1401,
+    "posY": 181,
+    "posZ": 127,
+    "outputLinks": [{
+      "@id": "/links/58",
+      "@type": "Link",
+      "id": 58,
+      "from": "/nodes/40",
+      "to": "/nodes/48",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/45",
+      "@type": "Link",
+      "id": 45,
+      "from": "/nodes/27",
+      "to": "/nodes/40",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/46",
+      "@type": "Link",
+      "id": 46,
+      "from": "/nodes/29",
+      "to": "/nodes/40",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/47",
+      "@type": "Link",
+      "id": 47,
+      "from": "/nodes/28",
+      "to": "/nodes/40",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1401,
+      "y": 181
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/45",
+    "@type": "Node",
+    "label": "/labels/18",
+    "id": 45,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1282,
+    "posY": 533,
+    "posZ": 1445,
+    "outputLinks": [{
+      "@id": "/links/57",
+      "@type": "Link",
+      "id": 57,
+      "from": "/nodes/45",
+      "to": "/nodes/47",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/53",
+      "@type": "Link",
+      "id": 53,
+      "from": "/nodes/33",
+      "to": "/nodes/45",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/54",
+      "@type": "Link",
+      "id": 54,
+      "from": "/nodes/34",
+      "to": "/nodes/45",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/55",
+      "@type": "Link",
+      "id": 55,
+      "from": "/nodes/32",
+      "to": "/nodes/45",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1282,
+      "y": 533
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/47",
+    "@type": "Node",
+    "label": "/labels/19",
+    "id": 47,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1432,
+    "posY": 533,
+    "posZ": 1446,
+    "outputLinks": [{
+      "@id": "/links/59",
+      "@type": "Link",
+      "id": 59,
+      "from": "/nodes/47",
+      "to": "/nodes/48",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/57",
+      "@type": "Link",
+      "id": 57,
+      "from": "/nodes/45",
+      "to": "/nodes/47",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1432,
+      "y": 533
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/48",
+    "@type": "Node",
+    "label": "/labels/20",
+    "id": 48,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1654,
+    "posY": 339,
+    "posZ": 1455,
+    "outputLinks": [{
+      "@id": "/links/842",
+      "@type": "Link",
+      "id": 842,
+      "from": "/nodes/48",
+      "to": "/nodes/786",
+      "dataKeyValue": null
+    }],
+    "inputLinks": [{
+      "@id": "/links/58",
+      "@type": "Link",
+      "id": 58,
+      "from": "/nodes/40",
+      "to": "/nodes/48",
+      "dataKeyValue": null
+    }, {
+      "@id": "/links/59",
+      "@type": "Link",
+      "id": 59,
+      "from": "/nodes/47",
+      "to": "/nodes/48",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1654,
+      "y": 339
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/581",
+    "@type": "Node",
+    "label": "/labels/379",
+    "id": 581,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 0,
+    "posY": 0,
+    "posZ": 1195,
+    "outputLinks": [],
+    "inputLinks": [],
+    "mediaType": "/media_types/1",
+    "graphPos": {
+      "x": 0,
+      "y": 0
+    },
+    "isRoot": false
+  }, {
+    "@id": "/nodes/786",
+    "@type": "Node",
+    "label": "/labels/355",
+    "id": 786,
+    "name": "",
+    "description": "",
+    "color": null,
+    "posX": 1824,
+    "posY": 340,
+    "posZ": 1456,
+    "outputLinks": [],
+    "inputLinks": [{
+      "@id": "/links/842",
+      "@type": "Link",
+      "id": 842,
+      "from": "/nodes/48",
+      "to": "/nodes/786",
+      "dataKeyValue": null
+    }],
+    "mediaType": "/media_types/2",
+    "graphPos": {
+      "x": 1824,
+      "y": 340
+    },
+    "isRoot": false
+  }]
+};
+},{}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _react = _interopRequireDefault(require("react"));
@@ -32927,6 +33962,8 @@ var _reactDom = _interopRequireDefault(require("react-dom"));
 var _GraphNavigator = _interopRequireDefault(require("./components/GraphNavigator"));
 
 require("./assets/App.scss");
+
+var _connectables = _interopRequireDefault(require("./connectables.json"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -32978,12 +34015,12 @@ var App = function App() {
   return _react.default.createElement("div", {
     className: "App"
   }, _react.default.createElement(_GraphNavigator.default, {
-    connectables: fakeConnectable
+    connectables: _connectables.default.connectables
   }));
 };
 
 _reactDom.default.render(_react.default.createElement(App, null), document.querySelector('#root'));
-},{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js","./components/GraphNavigator":"components/GraphNavigator.jsx","./assets/App.scss":"assets/App.scss"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js","./components/GraphNavigator":"components/GraphNavigator.jsx","./assets/App.scss":"assets/App.scss","./connectables.json":"connectables.json"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
