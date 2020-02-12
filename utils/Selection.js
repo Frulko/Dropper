@@ -14,4 +14,8 @@ export default class Selection {
 
   }
 
+  onMouseUp() {}
+  onMouseDown() {}
+  onDragStart() {}
+
 }

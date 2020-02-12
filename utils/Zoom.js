@@ -4,4 +4,5 @@ export default class Zoom {
 
   }
 
+  onMouseWheel() {}
 }
