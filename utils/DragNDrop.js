@@ -93,7 +93,7 @@ export default class DragNDrop {
     this.container = container;
 
     this.selectionAreaEl = document.createElement("div");
-    this.selectionAreaEl.classList.add("GraphViewer__SelectionBox");
+    this.selectionAreaEl.classList.add("GraphViewer__SelectionBox", 'GraphViewer__SelectionBox--hide');
 
     this.container.appendChild(this.selectionAreaEl);
 
@@ -308,6 +308,7 @@ export default class DragNDrop {
 
   update() {
     const t = this.transform;
+    // update board
     this.el.style.transform = `translate3d(${t.x}px, ${t.y}px, 0) scale(${t.k})`;
   }
 
@@ -401,12 +402,22 @@ export default class DragNDrop {
     this.unselectedNodes = [];
     this.posFirst = [0, 0];
     this.onDragHandler.call(this, evt);
+    this.dragged = null;
   }
 
   handleMouseMove(event) {
+
+    // TODO handle the case of you drag and move outside the view (today: still moving while mouse is up, futur: cancel all action)
     const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
 
-    if (this.mouseDown) {
+
+
+    if (this.mouseDown && !this.isDragging ) {
+      if (this.dragged !== null) {
+        return;
+      }
+
+
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       const { x, y } = this.selectionAreaBox;
 
@@ -527,6 +538,9 @@ export default class DragNDrop {
       // dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
     }
 
+    // update node
+    this.dragged.setAttribute('data-x', posX); // need to be update because selection might be not working (calculate on old values)
+    this.dragged.setAttribute('data-y', posY);
     this.dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
   }
 
@@ -671,7 +685,7 @@ export default class DragNDrop {
   }
 
   updateSelectionBoxDOM(start, end) {
-    console.log(start, this.containerOffset.x);
+    console.log(start, end);
     const { transform, width, height } = rectPositionToCSSProperties(
       positionningRect2Dom(start, end)
     );
@@ -713,13 +727,14 @@ export default class DragNDrop {
 
     // TODO do not do this !!! // check at start selection and use dom selection after
     const els = document.querySelectorAll('[draggable="true"]');
-
+    
     const selection = [];
 
     for (let i = 0, l = els.length; i < l; i += 1) {
+
       const element = els[i];
       const elementPosition = {
-        x: +element.getAttribute("data-x"),
+        x: +element.getAttribute("data-x"), // TODO ok for this piece of shit but you need to update it before
         y: +element.getAttribute("data-y"),
         width: +element.offsetWidth,
         height: +element.offsetHeight
@@ -768,5 +783,7 @@ export default class DragNDrop {
     // see if reference work and then update only the changed
   }
 
-  collisionQuadTree() {}
+  collisionQuadTree() {
+    
+  }
 }
