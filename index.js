@@ -54,13 +54,16 @@ const fakeConnectable = [
 
 const App = () => {
   return (
-    <div className="App">
+    <div>
+      <div style={{height: 80, backgroundColor: 'tomato'}}></div>
+<div className="App">
       <LeftList />
       <div className="MainContainer">
 
         <GraphNavigator connectables={fakeData.connectables} />
         <BottomList />
       </div>
+    </div>
     </div>
   );
 }

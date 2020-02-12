@@ -32322,7 +32322,7 @@ function () {
     value: function setContainer(container) {
       this.container = container;
       this.selectionAreaEl = document.createElement("div");
-      this.selectionAreaEl.classList.add("GraphViewer__SelectionBox");
+      this.selectionAreaEl.classList.add("GraphViewer__SelectionBox", 'GraphViewer__SelectionBox--hide');
       this.container.appendChild(this.selectionAreaEl);
       var rect = this.container.getBoundingClientRect();
       this.containerOffset = {
@@ -32469,7 +32469,8 @@ function () {
   }, {
     key: "update",
     value: function update() {
-      var t = this.transform;
+      var t = this.transform; // update board
+
       this.el.style.transform = "translate3d(".concat(t.x, "px, ").concat(t.y, "px, 0) scale(").concat(t.k, ")");
     }
   }, {
@@ -32563,17 +32564,24 @@ function () {
       this.unselectedNodes = [];
       this.posFirst = [0, 0];
       this.onDragHandler.call(this, evt);
+      this.dragged = null;
     }
   }, {
     key: "handleMouseMove",
     value: function handleMouseMove(event) {
+      // TODO handle the case of you drag and move outside the view (today: still moving while mouse is up, futur: cancel all action)
       var _this$getPosFromEvent7 = this.getPosFromEvent(event.x, event.y),
           _this$getPosFromEvent8 = _slicedToArray(_this$getPosFromEvent7, 2),
           evtX = _this$getPosFromEvent8[0],
           evtY = _this$getPosFromEvent8[1];
 
-      if (this.mouseDown) {
+      if (this.mouseDown && !this.isDragging) {
+        if (this.dragged !== null) {
+          return;
+        }
         /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
+
+
         var _this$selectionAreaBo = this.selectionAreaBox,
             x = _this$selectionAreaBo.x,
             y = _this$selectionAreaBo.y;
@@ -32697,8 +32705,12 @@ function () {
 
       for (var i = 0, l = this.selectedNodes.length; i < l; i += 1) {
         var dragged = this.selectedNodes[i]; // dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
-      }
+      } // update node
 
+
+      this.dragged.setAttribute('data-x', posX); // need to be update because selection might be not working (calculate on old values)
+
+      this.dragged.setAttribute('data-y', posY);
       this.dragged.style.transform = "translate3d(".concat(posX, "px, ").concat(posY, "px, 0px)");
     }
   }, {
@@ -32843,7 +32855,7 @@ function () {
   }, {
     key: "updateSelectionBoxDOM",
     value: function updateSelectionBoxDOM(start, end) {
-      console.log(start, this.containerOffset.x);
+      console.log(start, end);
 
       var _rectPositionToCSSPro = (0, _positionningRect2Dom.rectPositionToCSSProperties)((0, _positionningRect2Dom.positionningRect2Dom)(start, end)),
           transform = _rectPositionToCSSPro.transform,
@@ -32893,6 +32905,7 @@ function () {
         var element = els[i];
         var elementPosition = {
           x: +element.getAttribute("data-x"),
+          // TODO ok for this piece of shit but you need to update it before
           y: +element.getAttribute("data-y"),
           width: +element.offsetWidth,
           height: +element.offsetHeight
@@ -34735,17 +34748,22 @@ var fakeConnectable = [{
 }];
 
 var App = function App() {
-  return _react.default.createElement("div", {
+  return _react.default.createElement("div", null, _react.default.createElement("div", {
+    style: {
+      height: 80,
+      backgroundColor: 'tomato'
+    }
+  }), _react.default.createElement("div", {
     className: "App"
   }, _react.default.createElement(_LeftList.default, null), _react.default.createElement("div", {
     className: "MainContainer"
   }, _react.default.createElement(_GraphNavigator.default, {
     connectables: _connectables.default.connectables
-  }), _react.default.createElement(_BottomList.default, null)));
+  }), _react.default.createElement(_BottomList.default, null))));
 };
 
 _reactDom.default.render(_react.default.createElement(App, null), document.querySelector('#root'));
-},{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js","./components/GraphNavigator":"components/GraphNavigator.jsx","./assets/App.scss":"assets/App.scss","./connectables.json":"connectables.json","./components/LeftList":"components/LeftList.jsx","./components/BottomList":"components/BottomList.jsx"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js","./components/GraphNavigator":"components/GraphNavigator.jsx","./assets/App.scss":"assets/App.scss","./connectables.json":"connectables.json","./components/LeftList":"components/LeftList.jsx","./components/BottomList":"components/BottomList.jsx"}],"../../../.nvm/versions/node/v12.12.0/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -34773,7 +34791,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54162" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49406" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -34949,5 +34967,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","index.js"], null)
+},{}]},{},["../../../.nvm/versions/node/v12.12.0/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","index.js"], null)
 //# sourceMappingURL=/dnd.e31bb0bc.js.map
