@@ -784,9 +784,13 @@ export default class DragNDrop {
 
   displaySelection(){
 
-    console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
+    // console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
 
     for (let i = 0, l = this.unselectedNodes.length; i < l; i += 1) {
+      if (this.selectedNodes.indexOf(this.unselectedNodes[i]) !== -1) {
+        continue;
+      }
+
       this.unselectedNodes[i].classList.remove("activate");
     }
   }
