@@ -57,6 +57,8 @@ export default class DragNDrop {
       y: 0
     };
 
+    this.previousSelectionLength = -1;
+
     console.log("--> constructor");
 
     var img = document.createElement("img");
@@ -403,6 +405,7 @@ export default class DragNDrop {
     this.posFirst = [0, 0];
     this.onDragHandler.call(this, evt);
     this.dragged = null;
+    this.previousSelectionLength = -1;
   }
 
   handleMouseMove(event) {
@@ -487,13 +490,6 @@ export default class DragNDrop {
     event.preventDefault();
     this.isDragging = true;
     this.updateDOMTranslate(event);
-    // console.log(getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor));
-    // const evt = this.updateEventObject({
-    //   delta: this.getDeltaPosition(event.x, event.y)
-    // }, event)
-
-    // this.onDragHandler.call(this, evt);
-    // this.dragged.style.transform = `translate3d(${getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getValueByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
   }
 
   handleDropEvent(ev) {
@@ -521,7 +517,6 @@ export default class DragNDrop {
   }
 
   getPosFromEvent(x, y) {
-    // console.log(this.containerOffset.y, y);
     const evtX = x - this.containerOffset.x;
     const evtY = y - this.containerOffset.y;
     return [evtX, evtY]
@@ -589,13 +584,6 @@ export default class DragNDrop {
 
     for (let i = 0, l = els.length; i < l; i += 1) {
       const b = els[i].getBoundingClientRect();
-      // const rect = {
-      //   x: +els[i].getAttribute('data-x'),
-      //   y: +els[i].getAttribute('data-y'),
-      //   width: b.width * (1/this.transform.k),
-      //   height: b.height * (1/this.transform.k)
-      // };
-
       const l = (b.left - this.transform.x) * (1 / this.transform.k);
       const t = (b.top - this.transform.y) * (1 / this.transform.k);
       const rect = {
@@ -604,8 +592,6 @@ export default class DragNDrop {
         width: b.width * (1 / this.transform.k),
         height: b.height * (1 / this.transform.k)
       };
-
-      // console.log('w', rect.width, rect.width * (1/this.transform.k))
 
       if (rect.x > boundingBox.width) {
         boundingBox.width = rect.x + rect.width;
@@ -664,28 +650,23 @@ export default class DragNDrop {
       return;
     }
 
-    // const { transform, width, height } = rectPositionToCSSProperties(
-    //   this.selectionAreaBox
-    // );
-
-    // this.selectionAreaEl.style.transform = transform;
-    // this.selectionAreaEl.style.width = width;
-    // this.selectionAreaEl.style.height = height;
-
     const { x, y, endx, endy } = this.selectionAreaBox;
+    this.updateSelectionBoxDOM([x, y], [endx, endy]);
 
     const selection = this.calculateCollisionsInsideSelectionArea(
       [x, y],
       [endx, endy]
     );
 
+    if (selection.length === this.previousSelectionLength) {
+      return;
+    }
 
-
-    this.updateSelectionBoxDOM([x, y], [endx, endy]);
+    console.log(selection);
+    this.previousSelectionLength = selection.length;
   }
 
   updateSelectionBoxDOM(start, end) {
-    console.log(start, end);
     const { transform, width, height } = rectPositionToCSSProperties(
       positionningRect2Dom(start, end)
     );
