@@ -388,6 +388,20 @@ export default class DragNDrop {
     );
 
     //
+    const hasMoved = this.posFirst[0] !== evtX || this.posFirst[1] !== evtY;
+    if (this.isNode && !hasMoved) {
+     
+      const selectionIndex = this.selectedNodes.indexOf(this.dragged);
+      const isNotInSelection = selectionIndex === -1;
+
+      if (isNotInSelection) {
+        this.selectedNodes.push(this.dragged);
+      } else {
+        this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
+        this.selectedNodes.splice(selectionIndex, 1);
+      }
+      
+    }
 
     if (!this.isNode) {
       // this.unselectedNodes = this.selectedNodes;
@@ -415,7 +429,6 @@ export default class DragNDrop {
     this.onDragHandler.call(this, evt);
     this.dragged = null;
     this.previousSelectionLength = -1;
-
   }
 
   handleMouseMove(event) {
@@ -480,13 +493,19 @@ export default class DragNDrop {
 
   handleDragStartEvent(event) {
     // this.dragged = event.target;
-
-    if (!this.checkIsNode(event.target)) {
+   
+    const node = this.checkIsNode(event.target);
+    if (!node) {
       return;
+    }
+
+    if (this.selectedNodes.indexOf(node) === -1) {
+      this.selectedNodes.push(node);
     }
 
     this.isDragging = true;
     event.dataTransfer.setDragImage(this.dragImagePlaceholder, 0, 0);
+    this.displaySelection();
   }
 
   handleDragEndEvent(event) {
@@ -798,6 +817,10 @@ export default class DragNDrop {
 
   displaySelection(){
     // console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
+    for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
+      this.selectedNodes[i].classList.add("activate");
+    }
+
     for (let i = 0, l = this.unselectedNodes.length; i < l; i += 1) {
       if (this.selectedNodes.indexOf(this.unselectedNodes[i]) !== -1) {
         continue;
