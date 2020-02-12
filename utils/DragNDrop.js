@@ -57,6 +57,9 @@ export default class DragNDrop {
       y: 0
     };
 
+    this.shiftKeyPressed = false;
+    this.ctrlKeyPressed = false;
+
     this.previousSelectionLength = -1;
 
     console.log("--> constructor");
@@ -71,7 +74,12 @@ export default class DragNDrop {
 
     this.dragImagePlaceholder = img;
 
-    this.onKeyHandler = () => {};
+    this.onKeyHandler = (type, evt) => {
+
+      this.shiftKeyPressed = (type === 'down' && evt.shiftKey);
+      this.ctrlKeyPressed = (type === 'down' && evt.ctrlKey);
+
+    };
 
     this.update();
   }
@@ -119,7 +127,7 @@ export default class DragNDrop {
   }
 
   onKeyEvent(handler) {
-    this.onKeyHandler = handler;
+    // this.onKeyHandler = handler;
   }
 
   initEventListeners() {
@@ -395,7 +403,13 @@ export default class DragNDrop {
       const isNotInSelection = selectionIndex === -1;
 
       if (isNotInSelection) {
-        this.selectedNodes.push(this.dragged);
+        if (this.shiftKeyPressed) {
+          this.selectedNodes.push(this.dragged);
+        } else {
+          this.unselectedNodes = [ ...this.selectedNodes ];
+          this.selectedNodes = [ this.dragged ];
+        }
+        
       } else {
         this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
         this.selectedNodes.splice(selectionIndex, 1);
