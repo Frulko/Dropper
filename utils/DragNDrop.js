@@ -350,6 +350,7 @@ export default class DragNDrop {
       this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
       this.selectionAreaBox.y = evtY;
       this.selectionAreaBox.initialized = true;
+      this.unselectedNodes = [...this.selectedNodes];
       // this.renderSelectionAreaBox();
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
     }
@@ -370,18 +371,18 @@ export default class DragNDrop {
     const delta = this.getDeltaPosition(evtX, evtY);
     const evt = this.updateEventObject(
       {
-        target: this.isNode,
+        target: this.isNode || event.target, // if not a node === null so we set the event.target if null;
         last: true,
         delta,
-        node: this.isNode,
+        node: this.isNode, // if not a node so just return null 
         pos: [
           ((this.originalPosition[0] - this.origin[0] + delta[0]) * 1) /
             this.scaleFactor,
           ((this.originalPosition[1] - this.origin[1] + delta[1]) * 1) /
             this.scaleFactor
         ],
-        selection: [...this.selectedNodes],
-        unselection: [...this.unselectedNodes]
+        // selection: [...this.selectedNodes],
+        // unselection: [...this.unselectedNodes]
       },
       event
     );
@@ -389,23 +390,32 @@ export default class DragNDrop {
     //
 
     if (!this.isNode) {
-      this.selectedNodes = [];
+      // this.unselectedNodes = this.selectedNodes;
+      // this.selectedNodes = [];
     }
 
     // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
     // TODO check if is stop on a node -- do not select and trigger it
     // TODO DISABLE SELECTION IF DRAGGING
-    const selectionIsAtSamePosition =
-      this.selectionAreaBox.x === evtX && this.selectionAreaBox.y === evtY;
+    const selectionIsAtSamePosition = this.selectionAreaBox.x === evtX && this.selectionAreaBox.y === evtY;
     if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
       this.resetSelectionBoxArea();
     }
 
-    this.unselectedNodes = [];
+    if (selectionIsAtSamePosition) {
+      this.unselectedNodes = [...this.selectedNodes];
+      this.selectedNodes = [];
+    }
+
+
+    this.displaySelection();
+
+
     this.posFirst = [0, 0];
     this.onDragHandler.call(this, evt);
     this.dragged = null;
     this.previousSelectionLength = -1;
+
   }
 
   handleMouseMove(event) {
@@ -662,7 +672,11 @@ export default class DragNDrop {
       return;
     }
 
-    console.log(selection);
+    
+    this.selectedNodes = [...selection];
+
+   
+
     this.previousSelectionLength = selection.length;
   }
 
@@ -766,5 +780,14 @@ export default class DragNDrop {
 
   collisionQuadTree() {
     
+  }
+
+  displaySelection(){
+
+    console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
+
+    for (let i = 0, l = this.unselectedNodes.length; i < l; i += 1) {
+      this.unselectedNodes[i].classList.remove("activate");
+    }
   }
 }
