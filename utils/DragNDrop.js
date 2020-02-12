@@ -332,13 +332,13 @@ export default class DragNDrop {
 
     const nodeElement = this.checkIsNode(event.target);
     if (nodeElement) {
+      // this.selectedNodes.push(nodeElement);
       this.dragged = nodeElement;
       const draggedRect = this.dragged.getBoundingClientRect();
       const [x, y] = this.getPosFromEvent(draggedRect.x, draggedRect.y);
 
       this.draggedClickPositionOffset = [evtX - x, evtY - y];
       this.originalPosition = [x, y];
-
       dragObject.node = true;
       dragObject.target = nodeElement;
       this.isNode = true;
@@ -537,10 +537,23 @@ export default class DragNDrop {
 
 
     const [posX, posY] = this.getPosition(evtX, evtY);
+    // ok we have the new pos of element but for multiple selection we need delta
+    const oldPosX = +this.dragged.getAttribute('data-x');
+    const oldPosY = +this.dragged.getAttribute('data-y');
 
+    const [deltaX, deltaY] = [posX - oldPosX, posY - oldPosY];
+    // console.log('d', [posX - oldPosX, posY - oldPosY]);
+    
     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       const dragged = this.selectedNodes[i];
-      // dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
+      const oldDraggedPosX = +dragged.getAttribute('data-x')
+      const oldDraggedPosY = +dragged.getAttribute('data-y')
+      const nPosX = oldDraggedPosX + deltaX;
+      const nPosY = oldDraggedPosY + deltaY;
+
+      dragged.setAttribute('data-x', nPosX); // need to be update because selection might be not working (calculate on old values)
+      dragged.setAttribute('data-y', nPosY);
+      dragged.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
     }
 
     // update node
@@ -583,7 +596,7 @@ export default class DragNDrop {
   // TODO add dblclick to zoom
 
   fitToScreen() {
-    const els = document.querySelectorAll('[draggable="true"]');
+    const els = this.container.querySelectorAll('[draggable="true"]');
 
     const boundingBox = {
       x: 0,
@@ -675,6 +688,7 @@ export default class DragNDrop {
     
     this.selectedNodes = [...selection];
 
+
    
 
     this.previousSelectionLength = selection.length;
@@ -721,7 +735,7 @@ export default class DragNDrop {
     );
 
     // TODO do not do this !!! // check at start selection and use dom selection after
-    const els = document.querySelectorAll('[draggable="true"]');
+    const els = this.container.querySelectorAll('[draggable="true"]');
     
     const selection = [];
 
@@ -783,9 +797,7 @@ export default class DragNDrop {
   }
 
   displaySelection(){
-
     // console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
-
     for (let i = 0, l = this.unselectedNodes.length; i < l; i += 1) {
       if (this.selectedNodes.indexOf(this.unselectedNodes[i]) !== -1) {
         continue;
