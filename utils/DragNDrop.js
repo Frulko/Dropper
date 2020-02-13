@@ -76,9 +76,12 @@ export default class DragNDrop {
 
     this.onKeyHandler = (type, evt) => {
 
-      this.shiftKeyPressed = (type === 'down' && evt.shiftKey);
-      this.ctrlKeyPressed = (type === 'down' && evt.ctrlKey);
+      this.shiftKeyPressed = type === "down" && evt.shiftKey;
+      this.ctrlKeyPressed = type === "down" && evt.ctrlKey;
 
+      if (type === 'down' && evt.keyCode === 70) {
+        this.fitToScreen();
+      }
     };
 
     this.update();
@@ -103,7 +106,10 @@ export default class DragNDrop {
     this.container = container;
 
     this.selectionAreaEl = document.createElement("div");
-    this.selectionAreaEl.classList.add("GraphViewer__SelectionBox", 'GraphViewer__SelectionBox--hide');
+    this.selectionAreaEl.classList.add(
+      "GraphViewer__SelectionBox",
+      "GraphViewer__SelectionBox--hide"
+    );
 
     this.container.appendChild(this.selectionAreaEl);
 
@@ -159,6 +165,16 @@ export default class DragNDrop {
     this.container.addEventListener(
       "dragend",
       this.handleDragEndEvent.bind(this),
+      false
+    );
+    this.container.addEventListener(
+      "dragenter",
+      this.handleDragEnterEvent.bind(this),
+      false
+    );
+    this.container.addEventListener(
+      "dragleave",
+      this.handleDragLeaveEvent.bind(this),
       false
     );
     this.container.addEventListener(
@@ -382,13 +398,13 @@ export default class DragNDrop {
         target: this.isNode || event.target, // if not a node === null so we set the event.target if null;
         last: true,
         delta,
-        node: this.isNode, // if not a node so just return null 
+        node: this.isNode, // if not a node so just return null
         pos: [
           ((this.originalPosition[0] - this.origin[0] + delta[0]) * 1) /
             this.scaleFactor,
           ((this.originalPosition[1] - this.origin[1] + delta[1]) * 1) /
             this.scaleFactor
-        ],
+        ]
         // selection: [...this.selectedNodes],
         // unselection: [...this.unselectedNodes]
       },
@@ -398,7 +414,6 @@ export default class DragNDrop {
     //
     const hasMoved = this.posFirst[0] !== evtX || this.posFirst[1] !== evtY;
     if (this.isNode && !hasMoved) {
-     
       const selectionIndex = this.selectedNodes.indexOf(this.dragged);
       const isNotInSelection = selectionIndex === -1;
 
@@ -406,15 +421,13 @@ export default class DragNDrop {
         if (this.shiftKeyPressed) {
           this.selectedNodes.push(this.dragged);
         } else {
-          this.unselectedNodes = [ ...this.selectedNodes ];
-          this.selectedNodes = [ this.dragged ];
+          this.unselectedNodes = [...this.selectedNodes];
+          this.selectedNodes = [this.dragged];
         }
-        
       } else {
         this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
         this.selectedNodes.splice(selectionIndex, 1);
       }
-      
     }
 
     if (!this.isNode) {
@@ -425,7 +438,8 @@ export default class DragNDrop {
     // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
     // TODO check if is stop on a node -- do not select and trigger it
     // TODO DISABLE SELECTION IF DRAGGING
-    const selectionIsAtSamePosition = this.selectionAreaBox.x === evtX && this.selectionAreaBox.y === evtY;
+    const selectionIsAtSamePosition =
+      this.selectionAreaBox.x === evtX && this.selectionAreaBox.y === evtY;
     if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
       this.resetSelectionBoxArea();
     }
@@ -435,9 +449,7 @@ export default class DragNDrop {
       this.selectedNodes = [];
     }
 
-
     this.displaySelection();
-
 
     this.posFirst = [0, 0];
     this.onDragHandler.call(this, evt);
@@ -446,17 +458,13 @@ export default class DragNDrop {
   }
 
   handleMouseMove(event) {
-
     // TODO handle the case of you drag and move outside the view (today: still moving while mouse is up, futur: cancel all action)
     const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
 
-
-
-    if (this.mouseDown && !this.isDragging ) {
+    if (this.mouseDown && !this.isDragging) {
       if (this.dragged !== null) {
         return;
       }
-
 
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       const { x, y } = this.selectionAreaBox;
@@ -507,7 +515,9 @@ export default class DragNDrop {
 
   handleDragStartEvent(event) {
     // this.dragged = event.target;
-   
+    // event.target.style.opacity = 0.5;
+    // event.target.style.pointerEvents = "none";
+    this.container.classList.add('draggin');
     const node = this.checkIsNode(event.target);
     if (!node) {
       return;
@@ -520,25 +530,77 @@ export default class DragNDrop {
     this.isDragging = true;
     event.dataTransfer.setDragImage(this.dragImagePlaceholder, 0, 0);
     this.displaySelection();
+
+    console.log('make copy clone')
+    // this.dragged.cloneNode() -- add clone phantom clone (pointer event: none) and update position of this clone
+    // destroy clone add drop or drag end
+    this.dragged.classList.add('hide');
   }
 
   handleDragEndEvent(event) {
+    // event.target.style.opacity = "";
+    // event.target.style.pointerEvents = "all";
     this.handleMouseUp(event);
   }
 
   handleDragEvent(event) {}
 
+  handleDragEnterEvent(event) {
+    /*  const node = this.checkIsNode(event.target);
+    console.log('drag enter', node);
+    /* if ( && event.target !== this.dragged) {
+     
+    } */
+    // TODO when dragging node if the drag is over an element inner a node drag enter not dispatch so make mode drag and pointer-events: none inner node
+    const node = this.checkIsNode(event.target);
+    // console.log(node);
+    if (node && node !== this.dragged) {
+      node.style.background = "limegreen";
+    }
+  }
+
+  handleDragLeaveEvent(event) {
+    const node = this.checkIsNode(event.target);
+    if (node) {
+      node.style.background = "white";
+    }
+  }
+
   handleDragOverEvent(event) {
     // Empêche default d'autoriser le drop
+    // console.log(event);
     event.preventDefault();
+    const node = this.checkIsNode(event.target);
+    if (node) {
+      // this.dragged = node;
+      
+    }
+    
+    // console.log("drag over", node.getAttribute("data-node"));
+  /*  
+    */
+
     this.isDragging = true;
-    this.updateDOMTranslate(event);
+    // this.updateDOMTranslate(event);
+    
+    
   }
 
   handleDropEvent(ev) {
     ev.preventDefault();
+    this.container.classList.remove('draggin');
+    this.dragged.classList.remove('hide');
+    const node = this.checkIsNode(ev.target);
+
+    if (node) {
+      node.style.backgroundColor = 'white';
+      console.log("drop on node",this.dragged,  node);
+    }
+
+
+    
     // var data = event.dataTransfer.getData("text/plain");
-    const items = ev.dataTransfer.items;
+    /*  const items = ev.dataTransfer.items;
 
     if (ev.dataTransfer.items) {
       // Use DataTransferItemList interface to access the file(s)
@@ -556,42 +618,41 @@ export default class DragNDrop {
           "... file[" + i + "].name = " + ev.dataTransfer.files[i].name
         );
       }
-    }
+    } */
   }
 
   getPosFromEvent(x, y) {
     const evtX = x - this.containerOffset.x;
     const evtY = y - this.containerOffset.y;
-    return [evtX, evtY]
+    return [evtX, evtY];
   }
 
   updateDOMTranslate(event) {
     const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
 
-
     const [posX, posY] = this.getPosition(evtX, evtY);
     // ok we have the new pos of element but for multiple selection we need delta
-    const oldPosX = +this.dragged.getAttribute('data-x');
-    const oldPosY = +this.dragged.getAttribute('data-y');
+    const oldPosX = +this.dragged.getAttribute("data-x");
+    const oldPosY = +this.dragged.getAttribute("data-y");
 
     const [deltaX, deltaY] = [posX - oldPosX, posY - oldPosY];
     // console.log('d', [posX - oldPosX, posY - oldPosY]);
-    
+
     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       const dragged = this.selectedNodes[i];
-      const oldDraggedPosX = +dragged.getAttribute('data-x')
-      const oldDraggedPosY = +dragged.getAttribute('data-y')
+      const oldDraggedPosX = +dragged.getAttribute("data-x");
+      const oldDraggedPosY = +dragged.getAttribute("data-y");
       const nPosX = oldDraggedPosX + deltaX;
       const nPosY = oldDraggedPosY + deltaY;
 
-      dragged.setAttribute('data-x', nPosX); // need to be update because selection might be not working (calculate on old values)
-      dragged.setAttribute('data-y', nPosY);
+      dragged.setAttribute("data-x", nPosX); // need to be update because selection might be not working (calculate on old values)
+      dragged.setAttribute("data-y", nPosY);
       dragged.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
     }
 
     // update node
-    this.dragged.setAttribute('data-x', posX); // need to be update because selection might be not working (calculate on old values)
-    this.dragged.setAttribute('data-y', posY);
+    this.dragged.setAttribute("data-x", posX); // need to be update because selection might be not working (calculate on old values)
+    this.dragged.setAttribute("data-y", posY);
     this.dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
   }
 
@@ -718,11 +779,7 @@ export default class DragNDrop {
       return;
     }
 
-    
     this.selectedNodes = [...selection];
-
-
-   
 
     this.previousSelectionLength = selection.length;
   }
@@ -769,11 +826,10 @@ export default class DragNDrop {
 
     // TODO do not do this !!! // check at start selection and use dom selection after
     const els = this.container.querySelectorAll('[draggable="true"]');
-    
+
     const selection = [];
 
     for (let i = 0, l = els.length; i < l; i += 1) {
-
       const element = els[i];
       const elementPosition = {
         x: +element.getAttribute("data-x"), // TODO ok for this piece of shit but you need to update it before
@@ -825,11 +881,9 @@ export default class DragNDrop {
     // see if reference work and then update only the changed
   }
 
-  collisionQuadTree() {
-    
-  }
+  collisionQuadTree() {}
 
-  displaySelection(){
+  displaySelection() {
     // console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       this.selectedNodes[i].classList.add("activate");
