@@ -11,6 +11,7 @@ export default class DragNDrop {
   constructor(opts) {
     this.container = null;
     this.dragged = null;
+    this.draggedCopy = null;
     this.draggedSelection = [];
     this.draggedClickPositionOffset = [];
     this.originalPosition = [];
@@ -532,6 +533,10 @@ export default class DragNDrop {
     this.displaySelection();
 
     console.log('make copy clone')
+    this.draggedCopy = this.dragged.cloneNode(true);
+    this.draggedCopy.classList.remove('activate');
+    this.draggedCopy.classList.add('phantom');
+    this.el.appendChild(this.draggedCopy);
     // this.dragged.cloneNode() -- add clone phantom clone (pointer event: none) and update position of this clone
     // destroy clone add drop or drag end
     this.dragged.classList.add('hide');
@@ -581,13 +586,18 @@ export default class DragNDrop {
     */
 
     this.isDragging = true;
-    // this.updateDOMTranslate(event);
+    this.updateDOMTranslate(event, this.draggedCopy);
     
-    
+    // console.log(this.draggedCopy);
   }
 
   handleDropEvent(ev) {
     ev.preventDefault();
+    if (this.draggedCopy !== null) {
+      this.el.removeChild(this.draggedCopy);
+      this.draggedCopy = null;
+    }
+
     this.container.classList.remove('draggin');
     this.dragged.classList.remove('hide');
     const node = this.checkIsNode(ev.target);
@@ -627,7 +637,7 @@ export default class DragNDrop {
     return [evtX, evtY];
   }
 
-  updateDOMTranslate(event) {
+  updateDOMTranslate(event, elementToUpdate = this.dragged) {
     const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
 
     const [posX, posY] = this.getPosition(evtX, evtY);
@@ -638,7 +648,7 @@ export default class DragNDrop {
     const [deltaX, deltaY] = [posX - oldPosX, posY - oldPosY];
     // console.log('d', [posX - oldPosX, posY - oldPosY]);
 
-    for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
+    /* for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       const dragged = this.selectedNodes[i];
       const oldDraggedPosX = +dragged.getAttribute("data-x");
       const oldDraggedPosY = +dragged.getAttribute("data-y");
@@ -648,12 +658,12 @@ export default class DragNDrop {
       dragged.setAttribute("data-x", nPosX); // need to be update because selection might be not working (calculate on old values)
       dragged.setAttribute("data-y", nPosY);
       dragged.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
-    }
+    } */
 
     // update node
-    this.dragged.setAttribute("data-x", posX); // need to be update because selection might be not working (calculate on old values)
-    this.dragged.setAttribute("data-y", posY);
-    this.dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
+    this.draggedCopy.setAttribute("data-x", posX); // need to be update because selection might be not working (calculate on old values)
+    this.draggedCopy.setAttribute("data-y", posY);
+    this.draggedCopy.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
   }
 
   getPosition(x, y) {

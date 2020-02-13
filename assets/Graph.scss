@@ -44,6 +44,8 @@
     pointer-events: none;
   }
 
+ 
+
   &:focus{
     border-color: tomato;
     outline: none;
@@ -61,6 +63,11 @@
     // #{$editor}--dark &{
     //   background-color: rgba(limegreen, .2);
     // }
+  }
+
+  &.phantom{
+    pointer-events: none;
+    background-color: rgba(dodgerblue, .2);
   }
 
   &.hide{
