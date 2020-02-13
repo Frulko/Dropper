@@ -38,6 +38,12 @@
   position: absolute;
   top: 0;
   left: 0;
+
+
+  .GraphViewer.draggin & * { // when dragging add class for all --> maybe on container set classe draggin-node which turn off pointer event inner nodes
+    pointer-events: none;
+  }
+
   &:focus{
     border-color: tomato;
     outline: none;
@@ -51,10 +57,14 @@
 
   &.activate{
     background-color: rgba(tomato, .2);
-
+    z-index: 999;
     // #{$editor}--dark &{
     //   background-color: rgba(limegreen, .2);
     // }
+  }
+
+  &.hide{
+    opacity: 0;
   }
 }
 
