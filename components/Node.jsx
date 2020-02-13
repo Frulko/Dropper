@@ -25,7 +25,7 @@ export default React.forwardRef((props, ref) => {
   }
   
 
-  console.log('n-render', posX, posY);
+  // console.log('n-render', posX, posY);
    
   return (
     <NodeWrapper ref={ref} diffRender={tokenUpdate} onSelect={handleOnClick.bind(this)} onUnselect={handleOnUnselect} onOver={handleOnOver.bind(this)}>

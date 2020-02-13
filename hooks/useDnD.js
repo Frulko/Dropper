@@ -67,16 +67,16 @@ export default ({
       
       // console.log(evt.native.target, id, );
      
-      console.log(evt.selection, evt.unselection);
+      // console.log(evt.selection, evt.unselection);
 
       if (evt.node) {
         
         const id = evt.target.getAttribute('data-node');
-        console.log(id, evt.pos);
+        // console.log(id, evt.pos);
         // items[id].posX = evt.pos[0];
         // items[id].posY = evt.pos[1];
         // // console.log('|->>>', evt.pos, [plop[id].posX, plop[id].posY], evt.newPosition);
-        items[id].ref.current.external_onClickEvent();
+        /* items[id].ref.current.external_onClickEvent();
         onUpdateNodePosition(items[id].arrayIndex, evt.pos);
 
         const triggerSelectionEvent = (node, isSelected) => {
@@ -97,7 +97,7 @@ export default ({
 
         for(let unSelectedIndex in evt.unselection) {
           triggerSelectionEvent(evt.unselection[unSelectedIndex], false);
-        }
+        } */
         
       } else {
         
