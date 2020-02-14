@@ -50,7 +50,7 @@ export default class DragNDrop {
     this.selectedNodes = [];
     this.unselectedNodes = [];
 
-    this.draggingBoard = false;
+    this.draggingBoard = true;
 
     this.containerOffset = {
       x: 0,
@@ -243,7 +243,7 @@ export default class DragNDrop {
 
   handleMouseWheel(e) {
     e.preventDefault();
-    if (!e.shiftKey) {
+    if (!this.draggingBoard) {
       // if normal gesture move
       this._startPosition = { ...this.transform };
       this.onTranslate(e.deltaX, e.deltaY); // invert delta for natural scroll behavior
@@ -278,8 +278,9 @@ export default class DragNDrop {
 
   onTranslate(dx, dy) {
     // if (this._zoom.translating) return; // lock translation while zoom on multitouch
-
-    if (this._startPosition) { this.translate(this._startPosition.x + dx, this._startPosition.y + dy); }
+    if (this._startPosition) {
+      this.translate(this._startPosition.x + dx, this._startPosition.y + dy);
+    }
   }
 
   zoom(zoom, ox = 0, oy = 0, source) {
@@ -370,7 +371,7 @@ export default class DragNDrop {
       this.isNode = true;
       this.updateDOMTranslate(event);
       // this.selectionAreaBox.initialized = false;
-    } else {
+    } else if (!this.draggingBoard) {
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       // if selection --> setting up xy pos,
       this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
@@ -440,8 +441,9 @@ export default class DragNDrop {
     // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
     // TODO check if is stop on a node -- do not select and trigger it
     // TODO DISABLE SELECTION IF DRAGGING
-    const selectionIsAtSamePosition = this.selectionAreaBox.x === evtX && this.selectionAreaBox.y === evtY;
-    if (selectionIsAtSamePosition || this.selectionAreaBox.initialized) {
+    const { x, y } = this.selectionAreaBox;
+    const selectionIsAtSamePosition = x === evtX && y === evtY;
+    if (!this.draggingBoard && (selectionIsAtSamePosition || this.selectionAreaBox.initialized)) {
       this.resetSelectionBoxArea();
     }
 
@@ -459,7 +461,8 @@ export default class DragNDrop {
   }
 
   handleMouseMove(event) {
-    // TODO handle the case of you drag and move outside the view (today: still moving while mouse is up, futur: cancel all action)
+    // TODO handle the case of you drag and move outside the view
+    // (today: still moving while mouse is up, futur: cancel all action)
     const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
 
     if (this.mouseDown && !this.isDragging) {
@@ -472,7 +475,7 @@ export default class DragNDrop {
 
       const endX = evtX;
       const endY = evtY;
-      if (x !== endX && y !== endY) {
+      if (!this.draggingBoard && (x !== endX && y !== endY)) {
         this.showSelectionBox();
         // if same pos do nothing
         // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
