@@ -86,6 +86,10 @@ export default class DragNDrop {
     };
 
     this.update();
+
+    window.getSelection = () => {
+      return [this.selectedNodes, this.unselectedNodes];
+    }
   }
 
   updateEventObject(data, nativeEvent) {
@@ -568,7 +572,7 @@ export default class DragNDrop {
   handleDragLeaveEvent(event) {
     const node = this.checkIsNode(event.target);
     if (node) {
-      node.style.background = "white";
+      node.classList.remove('drop');
     }
   }
 
@@ -605,7 +609,7 @@ export default class DragNDrop {
     const node = this.checkIsNode(ev.target);
 
     if (node) {
-      node.style.backgroundColor = 'white';
+      node.classList.add('drop');
       console.log("drop on node",this.dragged,  node);
     }
 
