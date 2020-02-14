@@ -341,6 +341,25 @@ export default class DragNDrop {
     if (nodeElement) {
       // this.selectedNodes.push(nodeElement);
       this.dragged = nodeElement;
+
+      if (nodeElement) {
+        const selectionIndex = this.selectedNodes.indexOf(this.dragged);
+        const isNotInSelection = selectionIndex === -1;
+
+        if (isNotInSelection) {
+          if (this.shiftKeyPressed) {
+            this.selectedNodes.push(this.dragged);
+          } else {
+            this.unselectedNodes = [...this.selectedNodes];
+            this.selectedNodes = [this.dragged];
+          }
+        } else {
+          this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
+          this.selectedNodes.splice(selectionIndex, 1);
+        }
+      }
+
+
       const draggedRect = this.dragged.getBoundingClientRect();
       const [x, y] = this.getPosFromEvent(draggedRect.x, draggedRect.y);
 
@@ -396,7 +415,7 @@ export default class DragNDrop {
 
     //
     const hasMoved = this.posFirst[0] !== evtX || this.posFirst[1] !== evtY;
-    if (this.isNode && !hasMoved) {
+    /*  if (this.isNode && !hasMoved) {
       const selectionIndex = this.selectedNodes.indexOf(this.dragged);
       const isNotInSelection = selectionIndex === -1;
 
@@ -411,7 +430,7 @@ export default class DragNDrop {
         this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
         this.selectedNodes.splice(selectionIndex, 1);
       }
-    }
+    } */
 
     if (!this.isNode) {
       // this.unselectedNodes = this.selectedNodes;
