@@ -79,6 +79,13 @@ export default class DragNDrop {
     };
 
     this.update();
+
+    window.getSelectionItems = () => {
+      return [
+        this.selectedNodes,
+        this.unselectedNodes,
+      ];
+    };
   }
 
   updateEventObject(data, nativeEvent) {
@@ -343,21 +350,20 @@ export default class DragNDrop {
       // this.selectedNodes.push(nodeElement);
       this.dragged = nodeElement;
 
-      if (nodeElement) {
-        const selectionIndex = this.selectedNodes.indexOf(this.dragged);
-        const isNotInSelection = selectionIndex === -1;
 
-        if (isNotInSelection) {
-          if (this.shiftKeyPressed) {
-            this.selectedNodes.push(this.dragged);
-          } else {
-            this.unselectedNodes = [...this.selectedNodes];
-            this.selectedNodes = [this.dragged];
-          }
+      const selectionIndex = this.selectedNodes.indexOf(this.dragged);
+      const isNotInSelection = selectionIndex === -1;
+
+      if (isNotInSelection) {
+        if (this.shiftKeyPressed) {
+          this.selectedNodes.push(this.dragged);
         } else {
-          this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
-          this.selectedNodes.splice(selectionIndex, 1);
+          this.unselectedNodes = [...this.selectedNodes];
+          this.selectedNodes = [this.dragged];
         }
+      } else {
+        this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
+        this.selectedNodes.splice(selectionIndex, 1);
       }
 
 
@@ -381,6 +387,14 @@ export default class DragNDrop {
       // this.renderSelectionAreaBox();
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
     }
+
+
+    // console.log('here cleanup', this.shiftKeyPressed, nodeElement);
+    if (!this.shiftKeyPressed && !nodeElement) {
+      this.unselectedNodes = [...this.selectedNodes];
+      this.selectedNodes = [];
+    }
+
 
     const evt = this.updateEventObject(dragObject, event); // build a correct object
 
