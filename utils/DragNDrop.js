@@ -1,8 +1,8 @@
 import {
   positionningRect2Dom,
   rectPositionToCSSProperties,
-  getValueByScale
-} from "./positionningRect2Dom";
+  getValueByScale,
+} from './positionningRect2Dom';
 
 window.positionningRect2Dom = positionningRect2Dom;
 window.rectPositionToCSSProperties = rectPositionToCSSProperties;
@@ -27,7 +27,7 @@ export default class DragNDrop {
     this.transform = {
       k: opts.scaleFactor,
       x: this.origin[0],
-      y: this.origin[1]
+      y: this.origin[1],
     };
 
     this.selectionAreaBox = {
@@ -35,7 +35,7 @@ export default class DragNDrop {
       y: 0,
       endx: 0,
       endy: 0,
-      initialized: false
+      initialized: false,
     };
 
     this._startPosition = null;
@@ -54,7 +54,7 @@ export default class DragNDrop {
 
     this.containerOffset = {
       x: 0,
-      y: 0
+      y: 0,
     };
 
     this.shiftKeyPressed = false;
@@ -62,23 +62,20 @@ export default class DragNDrop {
 
     this.previousSelectionLength = -1;
 
-    console.log("--> constructor");
+    console.log('--> constructor');
 
-    var img = document.createElement("img");
-    img.src =
-      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    const img = document.createElement('img');
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
-    img.onload = function() {
-      console.log("ready");
+    img.onload = function () {
+      console.log('ready');
     };
 
     this.dragImagePlaceholder = img;
 
     this.onKeyHandler = (type, evt) => {
-
-      this.shiftKeyPressed = (type === 'down' && evt.shiftKey);
-      this.ctrlKeyPressed = (type === 'down' && evt.ctrlKey);
-
+      this.shiftKeyPressed = type === 'down' && evt.shiftKey;
+      this.ctrlKeyPressed = type === 'down' && evt.ctrlKey;
     };
 
     this.update();
@@ -95,22 +92,25 @@ export default class DragNDrop {
       node: false,
       selection: [],
       target: nativeEvent.target,
-      ...data
+      ...data,
     };
   }
 
   setContainer(container) {
     this.container = container;
 
-    this.selectionAreaEl = document.createElement("div");
-    this.selectionAreaEl.classList.add("GraphViewer__SelectionBox", 'GraphViewer__SelectionBox--hide');
+    this.selectionAreaEl = document.createElement('div');
+    this.selectionAreaEl.classList.add(
+      'GraphViewer__SelectionBox',
+      'GraphViewer__SelectionBox--hide',
+    );
 
     this.container.appendChild(this.selectionAreaEl);
 
     const rect = this.container.getBoundingClientRect();
     this.containerOffset = {
       x: rect.x,
-      y: rect.y
+      y: rect.y,
     };
   }
 
@@ -136,61 +136,61 @@ export default class DragNDrop {
     // });
 
     document.addEventListener(
-      "keyup",
-      this.onKeyHandler.bind(this, "up"),
-      false
+      'keyup',
+      this.onKeyHandler.bind(this, 'up'),
+      false,
     );
     document.addEventListener(
-      "keydown",
-      this.onKeyHandler.bind(this, "down"),
-      false
+      'keydown',
+      this.onKeyHandler.bind(this, 'down'),
+      false,
     );
 
     this.container.addEventListener(
-      "drag",
+      'drag',
       this.handleDragEvent.bind(this),
-      false
+      false,
     );
     this.container.addEventListener(
-      "dragstart",
+      'dragstart',
       this.handleDragStartEvent.bind(this),
-      false
+      false,
     );
     this.container.addEventListener(
-      "dragend",
+      'dragend',
       this.handleDragEndEvent.bind(this),
-      false
+      false,
     );
     this.container.addEventListener(
-      "dragover",
+      'dragover',
       this.handleDragOverEvent.bind(this),
-      false
+      false,
     );
     this.container.addEventListener(
-      "drop",
+      'drop',
       this.handleDropEvent.bind(this),
-      false
+      false,
     );
     this.container.addEventListener(
-      "mousedown",
+      'mousedown',
       this.handleMouseDown.bind(this),
-      false
+      false,
     );
     this.container.addEventListener(
-      "mouseup",
+      'mouseup',
       this.handleMouseUp.bind(this),
-      false
+      false,
     );
     this.container.addEventListener(
-      "mousemove",
+      'mousemove',
       this.handleMouseMove.bind(this),
-      false
+      false,
     );
 
     this.container.addEventListener(
-      "wheel",
+      'wheel',
       this.handleMouseWheel.bind(this),
-      false
+      false,
     );
 
     this.isMouseCounts = [];
@@ -199,52 +199,52 @@ export default class DragNDrop {
 
   destroyEventListeners() {
     this.container.removeEventListener(
-      "drag",
+      'drag',
       this.handleDragEvent.bind(this),
-      false
+      false,
     );
     this.container.removeEventListener(
-      "dragend",
+      'dragend',
       this.handleDragEndEvent.bind(this),
-      false
+      false,
     );
     this.container.removeEventListener(
-      "dragstart",
+      'dragstart',
       this.handleDragStartEvent.bind(this),
-      false
+      false,
     );
     this.container.removeEventListener(
-      "dragover",
+      'dragover',
       this.handleDragOverEvent.bind(this),
-      false
+      false,
     );
     this.container.removeEventListener(
-      "mousedown",
+      'mousedown',
       this.handleMouseDown.bind(this),
-      false
+      false,
     );
     this.container.removeEventListener(
-      "mouseup",
+      'mouseup',
       this.handleMouseUp.bind(this),
-      false
+      false,
     );
     this.container.removeEventListener(
-      "mousemove",
+      'mousemove',
       this.handleDragStartEvent.bind(this),
-      false
+      false,
     );
 
     this.container.removeEventListener(
-      "wheel",
+      'wheel',
       this.handleMouseWheel.bind(this),
-      false
+      false,
     );
   }
 
   handleMouseWheel(e) {
     e.preventDefault();
     if (!e.shiftKey) {
-      //if normal gesture move
+      // if normal gesture move
       this._startPosition = { ...this.transform };
       this.onTranslate(e.deltaX, e.deltaY); // invert delta for natural scroll behavior
       return;
@@ -253,18 +253,18 @@ export default class DragNDrop {
     // pinch to zoom on trackpad is set by browser w/ ctrlKey=true
 
     const rect = this.el.getBoundingClientRect();
-    const wheelDelta = e.wheelDelta;
+    const { wheelDelta } = e;
     const intensity = 0.05;
     const delta = (wheelDelta ? wheelDelta / 120 : -e.deltaY / 3) * intensity;
 
     // console.log(e.clientX);
-    let zoomingCenter = [e.clientX, e.clientY];
+    const zoomingCenter = [e.clientX, e.clientY];
     // zoomingCenter = [this.container.getBoundingClientRect().width /2 , this.container.getBoundingClientRect().height /2 ];
 
     const ox = (rect.left - zoomingCenter[0]) * delta;
     const oy = (rect.top - zoomingCenter[1]) * delta;
 
-    this.onZoom(delta, ox, oy, "wheel");
+    this.onZoom(delta, ox, oy, 'wheel');
   }
 
   onZoom(delta, ox, oy, source) {
@@ -279,12 +279,11 @@ export default class DragNDrop {
   onTranslate(dx, dy) {
     // if (this._zoom.translating) return; // lock translation while zoom on multitouch
 
-    if (this._startPosition)
-      this.translate(this._startPosition.x + dx, this._startPosition.y + dy);
+    if (this._startPosition) { this.translate(this._startPosition.x + dx, this._startPosition.y + dy); }
   }
 
   zoom(zoom, ox = 0, oy = 0, source) {
-    const k = this.transform.k;
+    const { k } = this.transform;
     const params = { transform: this.transform, zoom, source };
 
     let value = params.zoom || 1;
@@ -335,7 +334,7 @@ export default class DragNDrop {
 
     const dragObject = {
       first: true,
-      delta: this.getDeltaPosition(evtX, evtY)
+      delta: this.getDeltaPosition(evtX, evtY),
     };
 
     const nodeElement = this.checkIsNode(event.target);
@@ -382,23 +381,22 @@ export default class DragNDrop {
         target: this.isNode || event.target, // if not a node === null so we set the event.target if null;
         last: true,
         delta,
-        node: this.isNode, // if not a node so just return null 
+        node: this.isNode, // if not a node so just return null
         pos: [
-          ((this.originalPosition[0] - this.origin[0] + delta[0]) * 1) /
-            this.scaleFactor,
-          ((this.originalPosition[1] - this.origin[1] + delta[1]) * 1) /
-            this.scaleFactor
+          ((this.originalPosition[0] - this.origin[0] + delta[0]) * 1)
+            / this.scaleFactor,
+          ((this.originalPosition[1] - this.origin[1] + delta[1]) * 1)
+            / this.scaleFactor,
         ],
         // selection: [...this.selectedNodes],
         // unselection: [...this.unselectedNodes]
       },
-      event
+      event,
     );
 
     //
     const hasMoved = this.posFirst[0] !== evtX || this.posFirst[1] !== evtY;
     if (this.isNode && !hasMoved) {
-     
       const selectionIndex = this.selectedNodes.indexOf(this.dragged);
       const isNotInSelection = selectionIndex === -1;
 
@@ -406,15 +404,13 @@ export default class DragNDrop {
         if (this.shiftKeyPressed) {
           this.selectedNodes.push(this.dragged);
         } else {
-          this.unselectedNodes = [ ...this.selectedNodes ];
-          this.selectedNodes = [ this.dragged ];
+          this.unselectedNodes = [...this.selectedNodes];
+          this.selectedNodes = [this.dragged];
         }
-        
       } else {
         this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
         this.selectedNodes.splice(selectionIndex, 1);
       }
-      
     }
 
     if (!this.isNode) {
@@ -435,9 +431,7 @@ export default class DragNDrop {
       this.selectedNodes = [];
     }
 
-
     this.displaySelection();
-
 
     this.posFirst = [0, 0];
     this.onDragHandler.call(this, evt);
@@ -446,17 +440,13 @@ export default class DragNDrop {
   }
 
   handleMouseMove(event) {
-
     // TODO handle the case of you drag and move outside the view (today: still moving while mouse is up, futur: cancel all action)
     const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
 
-
-
-    if (this.mouseDown && !this.isDragging ) {
+    if (this.mouseDown && !this.isDragging) {
       if (this.dragged !== null) {
         return;
       }
-
 
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       const { x, y } = this.selectionAreaBox;
@@ -507,7 +497,7 @@ export default class DragNDrop {
 
   handleDragStartEvent(event) {
     // this.dragged = event.target;
-   
+
     const node = this.checkIsNode(event.target);
     if (!node) {
       return;
@@ -538,22 +528,22 @@ export default class DragNDrop {
   handleDropEvent(ev) {
     ev.preventDefault();
     // var data = event.dataTransfer.getData("text/plain");
-    const items = ev.dataTransfer.items;
+    const { items } = ev.dataTransfer;
 
     if (ev.dataTransfer.items) {
       // Use DataTransferItemList interface to access the file(s)
       for (var i = 0; i < ev.dataTransfer.items.length; i++) {
         // If dropped items aren't files, reject them
-        if (ev.dataTransfer.items[i].kind === "file") {
-          var file = ev.dataTransfer.items[i].getAsFile();
-          console.log("... file[" + i + "].name = " + file.name);
+        if (ev.dataTransfer.items[i].kind === 'file') {
+          const file = ev.dataTransfer.items[i].getAsFile();
+          console.log(`... file[${i}].name = ${file.name}`);
         }
       }
     } else {
       // Use DataTransfer interface to access the file(s)
       for (var i = 0; i < ev.dataTransfer.files.length; i++) {
         console.log(
-          "... file[" + i + "].name = " + ev.dataTransfer.files[i].name
+          `... file[${i}].name = ${ev.dataTransfer.files[i].name}`,
         );
       }
     }
@@ -562,12 +552,11 @@ export default class DragNDrop {
   getPosFromEvent(x, y) {
     const evtX = x - this.containerOffset.x;
     const evtY = y - this.containerOffset.y;
-    return [evtX, evtY]
+    return [evtX, evtY];
   }
 
   updateDOMTranslate(event) {
     const [evtX, evtY] = this.getPosFromEvent(event.x, event.y);
-
 
     const [posX, posY] = this.getPosition(evtX, evtY);
     // ok we have the new pos of element but for multiple selection we need delta
@@ -576,11 +565,11 @@ export default class DragNDrop {
 
     const [deltaX, deltaY] = [posX - oldPosX, posY - oldPosY];
     // console.log('d', [posX - oldPosX, posY - oldPosY]);
-    
+
     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       const dragged = this.selectedNodes[i];
-      const oldDraggedPosX = +dragged.getAttribute('data-x')
-      const oldDraggedPosY = +dragged.getAttribute('data-y')
+      const oldDraggedPosX = +dragged.getAttribute('data-x');
+      const oldDraggedPosY = +dragged.getAttribute('data-y');
       const nPosX = oldDraggedPosX + deltaX;
       const nPosY = oldDraggedPosY + deltaY;
 
@@ -612,11 +601,11 @@ export default class DragNDrop {
   }
 
   checkIsNode(target) {
-    if (target.getAttribute("data-root") !== null) {
+    if (target.getAttribute('data-root') !== null) {
       return false;
     }
 
-    if (target.getAttribute("draggable") === null) {
+    if (target.getAttribute('draggable') === null) {
       return this.checkIsNode(target.parentElement);
     }
     return target;
@@ -629,24 +618,25 @@ export default class DragNDrop {
   // TODO add dblclick to zoom
 
   fitToScreen() {
+    // TODO add a generic option for enable the behavior only on selected elements
     const els = this.container.querySelectorAll('[draggable="true"]');
 
     const boundingBox = {
       x: 0,
       y: 0,
       width: 0,
-      height: 0
+      height: 0,
     };
 
     for (let i = 0, l = els.length; i < l; i += 1) {
       const b = els[i].getBoundingClientRect();
-      const l = (b.left - this.transform.x) * (1 / this.transform.k);
-      const t = (b.top - this.transform.y) * (1 / this.transform.k);
+      const x = (b.left - this.transform.x) * (1 / this.transform.k);
+      const y = (b.top - this.transform.y) * (1 / this.transform.k);
       const rect = {
-        x: l,
-        y: t,
+        x,
+        y,
         width: b.width * (1 / this.transform.k),
-        height: b.height * (1 / this.transform.k)
+        height: b.height * (1 / this.transform.k),
       };
 
       if (rect.x > boundingBox.width) {
@@ -668,7 +658,7 @@ export default class DragNDrop {
 
     const rect = this.container.getBoundingClientRect();
     const padding = 150;
-    let k = this.transform.k;
+    let { k } = this.transform;
     if (boundingBox.width < boundingBox.height) {
       // if landscape mode
       k = (rect.height - padding) / boundingBox.height; // need to take x,y position of rect
@@ -679,7 +669,7 @@ export default class DragNDrop {
     this.transform = {
       k,
       x: rect.width / 2 - (boundingBox.width / 2) * k,
-      y: rect.height / 2 - (boundingBox.height / 2) * k
+      y: rect.height / 2 - (boundingBox.height / 2) * k,
     };
 
     this.update();
@@ -693,7 +683,7 @@ export default class DragNDrop {
     this.transform = {
       k: this.transform.k,
       x: 0,
-      y: 0
+      y: 0,
     };
 
     this.update();
@@ -706,30 +696,28 @@ export default class DragNDrop {
       return;
     }
 
-    const { x, y, endx, endy } = this.selectionAreaBox;
+    const {
+      x, y, endx, endy,
+    } = this.selectionAreaBox;
     this.updateSelectionBoxDOM([x, y], [endx, endy]);
 
     const selection = this.calculateCollisionsInsideSelectionArea(
       [x, y],
-      [endx, endy]
+      [endx, endy],
     );
 
     if (selection.length === this.previousSelectionLength) {
       return;
     }
 
-    
     this.selectedNodes = [...selection];
-
-
-   
 
     this.previousSelectionLength = selection.length;
   }
 
   updateSelectionBoxDOM(start, end) {
     const { transform, width, height } = rectPositionToCSSProperties(
-      positionningRect2Dom(start, end)
+      positionningRect2Dom(start, end),
     );
 
     this.selectionAreaEl.style.transform = transform;
@@ -738,11 +726,11 @@ export default class DragNDrop {
   }
 
   hideSelectionBox() {
-    this.selectionAreaEl.classList.add("GraphViewer__SelectionBox--hide");
+    this.selectionAreaEl.classList.add('GraphViewer__SelectionBox--hide');
   }
 
   showSelectionBox() {
-    this.selectionAreaEl.classList.remove("GraphViewer__SelectionBox--hide");
+    this.selectionAreaEl.classList.remove('GraphViewer__SelectionBox--hide');
   }
 
   resetSelectionBoxArea() {
@@ -753,7 +741,7 @@ export default class DragNDrop {
       y: 0,
       endx: 0,
       endy: 0,
-      initialized: false
+      initialized: false,
     };
   }
 
@@ -762,38 +750,36 @@ export default class DragNDrop {
       x,
       y,
       width,
-      height
+      height,
     } = this.transposePositionToBoardWithOriginOffsetAndScale(
-      positionningRect2Dom(start, end)
+      positionningRect2Dom(start, end),
     );
 
     // TODO do not do this !!! // check at start selection and use dom selection after
     const els = this.container.querySelectorAll('[draggable="true"]');
-    
+
     const selection = [];
 
     for (let i = 0, l = els.length; i < l; i += 1) {
-
       const element = els[i];
       const elementPosition = {
-        x: +element.getAttribute("data-x"), // TODO ok for this piece of shit but you need to update it before
-        y: +element.getAttribute("data-y"),
+        x: +element.getAttribute('data-x'), // TODO ok for this piece of shit but you need to update it before
+        y: +element.getAttribute('data-y'),
         width: +element.offsetWidth,
-        height: +element.offsetHeight
+        height: +element.offsetHeight,
       };
 
       // TODO: Use QuadTree algo for faster check
-      const isCollied =
-        elementPosition.x < x + width &&
-        elementPosition.x + elementPosition.width > x &&
-        elementPosition.y < y + height &&
-        elementPosition.y + elementPosition.height > y;
+      const isCollied = elementPosition.x < x + width
+        && elementPosition.x + elementPosition.width > x
+        && elementPosition.y < y + height
+        && elementPosition.y + elementPosition.height > y;
 
       if (isCollied) {
         selection.push(element);
-        element.classList.add("activate");
+        element.classList.add('activate');
       } else {
-        element.classList.remove("activate");
+        element.classList.remove('activate');
       }
     }
 
@@ -805,18 +791,18 @@ export default class DragNDrop {
     x = 0,
     y = 0,
     width = 0,
-    height = 0
+    height = 0,
   }) {
     x = getValueByScale(x - this.transform.x, this.transform.k);
     y = getValueByScale(y - this.transform.y, this.transform.k);
-    width = width * (1 / this.transform.k);
-    height = height * (1 / this.transform.k);
+    width *= (1 / this.transform.k);
+    height *= (1 / this.transform.k);
 
     return {
       x,
       y,
       width,
-      height
+      height,
     };
   }
 
@@ -825,14 +811,12 @@ export default class DragNDrop {
     // see if reference work and then update only the changed
   }
 
-  collisionQuadTree() {
-    
-  }
+  collisionQuadTree() {}
 
-  displaySelection(){
+  displaySelection() {
     // console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
-      this.selectedNodes[i].classList.add("activate");
+      this.selectedNodes[i].classList.add('activate');
     }
 
     for (let i = 0, l = this.unselectedNodes.length; i < l; i += 1) {
@@ -840,7 +824,7 @@ export default class DragNDrop {
         continue;
       }
 
-      this.unselectedNodes[i].classList.remove("activate");
+      this.unselectedNodes[i].classList.remove('activate');
     }
   }
 }
