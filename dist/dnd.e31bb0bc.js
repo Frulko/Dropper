@@ -32249,6 +32249,8 @@ var DragNDrop =
 /*#__PURE__*/
 function () {
   function DragNDrop(opts) {
+    var _this = this;
+
     _classCallCheck(this, DragNDrop);
 
     this.container = null;
@@ -32287,6 +32289,9 @@ function () {
       x: 0,
       y: 0
     };
+    this.shiftKeyPressed = false;
+    this.ctrlKeyPressed = false;
+    this.previousSelectionLength = -1;
     console.log("--> constructor");
     var img = document.createElement("img");
     img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -32297,7 +32302,10 @@ function () {
 
     this.dragImagePlaceholder = img;
 
-    this.onKeyHandler = function () {};
+    this.onKeyHandler = function (type, evt) {
+      _this.shiftKeyPressed = type === 'down' && evt.shiftKey;
+      _this.ctrlKeyPressed = type === 'down' && evt.ctrlKey;
+    };
 
     this.update();
   }
@@ -32347,8 +32355,7 @@ function () {
     }
   }, {
     key: "onKeyEvent",
-    value: function onKeyEvent(handler) {
-      this.onKeyHandler = handler;
+    value: function onKeyEvent(handler) {// this.onKeyHandler = handler;
     }
   }, {
     key: "initEventListeners",
@@ -32495,6 +32502,7 @@ function () {
       var nodeElement = this.checkIsNode(event.target);
 
       if (nodeElement) {
+        // this.selectedNodes.push(nodeElement);
         this.dragged = nodeElement;
         var draggedRect = this.dragged.getBoundingClientRect();
 
@@ -32515,7 +32523,8 @@ function () {
         this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
 
         this.selectionAreaBox.y = evtY;
-        this.selectionAreaBox.initialized = true; // this.renderSelectionAreaBox();
+        this.selectionAreaBox.initialized = true;
+        this.unselectedNodes = _toConsumableArray(this.selectedNodes); // this.renderSelectionAreaBox();
 
         /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       }
@@ -32539,18 +32548,39 @@ function () {
       this.isNode = this.checkIsNode(event.target);
       var delta = this.getDeltaPosition(evtX, evtY);
       var evt = this.updateEventObject({
-        target: this.isNode,
+        target: this.isNode || event.target,
+        // if not a node === null so we set the event.target if null;
         last: true,
         delta: delta,
         node: this.isNode,
-        pos: [(this.originalPosition[0] - this.origin[0] + delta[0]) * 1 / this.scaleFactor, (this.originalPosition[1] - this.origin[1] + delta[1]) * 1 / this.scaleFactor],
-        selection: _toConsumableArray(this.selectedNodes),
-        unselection: _toConsumableArray(this.unselectedNodes)
+        // if not a node so just return null 
+        pos: [(this.originalPosition[0] - this.origin[0] + delta[0]) * 1 / this.scaleFactor, (this.originalPosition[1] - this.origin[1] + delta[1]) * 1 / this.scaleFactor] // selection: [...this.selectedNodes],
+        // unselection: [...this.unselectedNodes]
+
       }, event); //
 
-      if (!this.isNode) {
-        this.selectedNodes = [];
-      } // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
+      var hasMoved = this.posFirst[0] !== evtX || this.posFirst[1] !== evtY;
+
+      if (this.isNode && !hasMoved) {
+        var selectionIndex = this.selectedNodes.indexOf(this.dragged);
+        var isNotInSelection = selectionIndex === -1;
+
+        if (isNotInSelection) {
+          if (this.shiftKeyPressed) {
+            this.selectedNodes.push(this.dragged);
+          } else {
+            this.unselectedNodes = _toConsumableArray(this.selectedNodes);
+            this.selectedNodes = [this.dragged];
+          }
+        } else {
+          this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
+          this.selectedNodes.splice(selectionIndex, 1);
+        }
+      }
+
+      if (!this.isNode) {} // this.unselectedNodes = this.selectedNodes;
+      // this.selectedNodes = [];
+      // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
       // TODO check if is stop on a node -- do not select and trigger it
       // TODO DISABLE SELECTION IF DRAGGING
 
@@ -32561,10 +32591,16 @@ function () {
         this.resetSelectionBoxArea();
       }
 
-      this.unselectedNodes = [];
+      if (selectionIsAtSamePosition) {
+        this.unselectedNodes = _toConsumableArray(this.selectedNodes);
+        this.selectedNodes = [];
+      }
+
+      this.displaySelection();
       this.posFirst = [0, 0];
       this.onDragHandler.call(this, evt);
       this.dragged = null;
+      this.previousSelectionLength = -1;
     }
   }, {
     key: "handleMouseMove",
@@ -32631,12 +32667,19 @@ function () {
     key: "handleDragStartEvent",
     value: function handleDragStartEvent(event) {
       // this.dragged = event.target;
-      if (!this.checkIsNode(event.target)) {
+      var node = this.checkIsNode(event.target);
+
+      if (!node) {
         return;
+      }
+
+      if (this.selectedNodes.indexOf(node) === -1) {
+        this.selectedNodes.push(node);
       }
 
       this.isDragging = true;
       event.dataTransfer.setDragImage(this.dragImagePlaceholder, 0, 0);
+      this.displaySelection();
     }
   }, {
     key: "handleDragEndEvent",
@@ -32652,12 +32695,7 @@ function () {
       // Empêche default d'autoriser le drop
       event.preventDefault();
       this.isDragging = true;
-      this.updateDOMTranslate(event); // console.log(getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor));
-      // const evt = this.updateEventObject({
-      //   delta: this.getDeltaPosition(event.x, event.y)
-      // }, event)
-      // this.onDragHandler.call(this, evt);
-      // this.dragged.style.transform = `translate3d(${getValueByScale(event.x - this.draggedClickPositionOffset[0], this.scaleFactor)}px, ${getValueByScale(event.y - this.draggedClickPositionOffset[1], this.scaleFactor)}px, 0px)`
+      this.updateDOMTranslate(event);
     }
   }, {
     key: "handleDropEvent",
@@ -32685,7 +32723,6 @@ function () {
   }, {
     key: "getPosFromEvent",
     value: function getPosFromEvent(x, y) {
-      // console.log(this.containerOffset.y, y);
       var evtX = x - this.containerOffset.x;
       var evtY = y - this.containerOffset.y;
       return [evtX, evtY];
@@ -32701,10 +32738,24 @@ function () {
       var _this$getPosition = this.getPosition(evtX, evtY),
           _this$getPosition2 = _slicedToArray(_this$getPosition, 2),
           posX = _this$getPosition2[0],
-          posY = _this$getPosition2[1];
+          posY = _this$getPosition2[1]; // ok we have the new pos of element but for multiple selection we need delta
+
+
+      var oldPosX = +this.dragged.getAttribute('data-x');
+      var oldPosY = +this.dragged.getAttribute('data-y');
+      var deltaX = posX - oldPosX,
+          deltaY = posY - oldPosY; // console.log('d', [posX - oldPosX, posY - oldPosY]);
 
       for (var i = 0, l = this.selectedNodes.length; i < l; i += 1) {
-        var dragged = this.selectedNodes[i]; // dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
+        var dragged = this.selectedNodes[i];
+        var oldDraggedPosX = +dragged.getAttribute('data-x');
+        var oldDraggedPosY = +dragged.getAttribute('data-y');
+        var nPosX = oldDraggedPosX + deltaX;
+        var nPosY = oldDraggedPosY + deltaY;
+        dragged.setAttribute('data-x', nPosX); // need to be update because selection might be not working (calculate on old values)
+
+        dragged.setAttribute('data-y', nPosY);
+        dragged.style.transform = "translate3d(".concat(nPosX, "px, ").concat(nPosY, "px, 0px)");
       } // update node
 
 
@@ -32754,7 +32805,7 @@ function () {
   }, {
     key: "fitToScreen",
     value: function fitToScreen() {
-      var els = document.querySelectorAll('[draggable="true"]');
+      var els = this.container.querySelectorAll('[draggable="true"]');
       var boundingBox = {
         x: 0,
         y: 0,
@@ -32763,12 +32814,7 @@ function () {
       };
 
       for (var i = 0, l = els.length; i < l; i += 1) {
-        var b = els[i].getBoundingClientRect(); // const rect = {
-        //   x: +els[i].getAttribute('data-x'),
-        //   y: +els[i].getAttribute('data-y'),
-        //   width: b.width * (1/this.transform.k),
-        //   height: b.height * (1/this.transform.k)
-        // };
+        var b = els[i].getBoundingClientRect();
 
         var _l = (b.left - this.transform.x) * (1 / this.transform.k);
 
@@ -32778,7 +32824,7 @@ function () {
           y: t,
           width: b.width * (1 / this.transform.k),
           height: b.height * (1 / this.transform.k)
-        }; // console.log('w', rect.width, rect.width * (1/this.transform.k))
+        };
 
         if (_rect.x > boundingBox.width) {
           boundingBox.width = _rect.x + _rect.width;
@@ -32836,27 +32882,26 @@ function () {
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       if (this.selectionAreaEl === null) {
         return;
-      } // const { transform, width, height } = rectPositionToCSSProperties(
-      //   this.selectionAreaBox
-      // );
-      // this.selectionAreaEl.style.transform = transform;
-      // this.selectionAreaEl.style.width = width;
-      // this.selectionAreaEl.style.height = height;
-
+      }
 
       var _this$selectionAreaBo2 = this.selectionAreaBox,
           x = _this$selectionAreaBo2.x,
           y = _this$selectionAreaBo2.y,
           endx = _this$selectionAreaBo2.endx,
           endy = _this$selectionAreaBo2.endy;
-      var selection = this.calculateCollisionsInsideSelectionArea([x, y], [endx, endy]);
       this.updateSelectionBoxDOM([x, y], [endx, endy]);
+      var selection = this.calculateCollisionsInsideSelectionArea([x, y], [endx, endy]);
+
+      if (selection.length === this.previousSelectionLength) {
+        return;
+      }
+
+      this.selectedNodes = _toConsumableArray(selection);
+      this.previousSelectionLength = selection.length;
     }
   }, {
     key: "updateSelectionBoxDOM",
     value: function updateSelectionBoxDOM(start, end) {
-      console.log(start, end);
-
       var _rectPositionToCSSPro = (0, _positionningRect2Dom.rectPositionToCSSProperties)((0, _positionningRect2Dom.positionningRect2Dom)(start, end)),
           transform = _rectPositionToCSSPro.transform,
           width = _rectPositionToCSSPro.width,
@@ -32898,7 +32943,7 @@ function () {
           height = _this$transposePositi.height; // TODO do not do this !!! // check at start selection and use dom selection after
 
 
-      var els = document.querySelectorAll('[draggable="true"]');
+      var els = this.container.querySelectorAll('[draggable="true"]');
       var selection = [];
 
       for (var i = 0, l = els.length; i < l; i += 1) {
@@ -32954,6 +32999,22 @@ function () {
   }, {
     key: "collisionQuadTree",
     value: function collisionQuadTree() {}
+  }, {
+    key: "displaySelection",
+    value: function displaySelection() {
+      // console.log('->', {s: this.selectedNodes, u: this.unselectedNodes });
+      for (var i = 0, l = this.selectedNodes.length; i < l; i += 1) {
+        this.selectedNodes[i].classList.add("activate");
+      }
+
+      for (var _i2 = 0, _l2 = this.unselectedNodes.length; _i2 < _l2; _i2 += 1) {
+        if (this.selectedNodes.indexOf(this.unselectedNodes[_i2]) !== -1) {
+          continue;
+        }
+
+        this.unselectedNodes[_i2].classList.remove("activate");
+      }
+    }
   }]);
 
   return DragNDrop;
@@ -33417,7 +33478,7 @@ var _default = _react.default.forwardRef(function (props, ref) {
 });
 
 exports.default = _default;
-},{"react":"node_modules/react/index.js","classnames":"node_modules/classnames/index.js","./NodeWrapper":"components/NodeWrapper.jsx","./DeepDebugNode":"components/DeepDebugNode.jsx"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","classnames":"node_modules/classnames/index.js","./NodeWrapper":"components/NodeWrapper.jsx","./DeepDebugNode":"components/DeepDebugNode.jsx"}],"../../../.nvm/versions/node/v12.12.0/lib/node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 
 function getBundleURLCached() {
@@ -33449,7 +33510,7 @@ function getBaseURL(url) {
 
 exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
-},{}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/css-loader.js":[function(require,module,exports) {
+},{}],"../../../.nvm/versions/node/v12.12.0/lib/node_modules/parcel-bundler/src/builtins/css-loader.js":[function(require,module,exports) {
 var bundle = require('./bundle-url');
 
 function updateLink(link) {
@@ -33484,12 +33545,12 @@ function reloadCSS() {
 }
 
 module.exports = reloadCSS;
-},{"./bundle-url":"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"assets/Graph.scss":[function(require,module,exports) {
+},{"./bundle-url":"../../../.nvm/versions/node/v12.12.0/lib/node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"assets/Graph.scss":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/css-loader.js"}],"components/GraphNavigator.jsx":[function(require,module,exports) {
+},{"_css_loader":"../../../.nvm/versions/node/v12.12.0/lib/node_modules/parcel-bundler/src/builtins/css-loader.js"}],"components/GraphNavigator.jsx":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -33588,7 +33649,74 @@ var GraphNavigator = function GraphNavigator(props) {
 
 var _default = GraphNavigator;
 exports.default = _default;
-},{"react":"node_modules/react/index.js","../hooks/useDnD":"hooks/useDnD.js","./Node":"components/Node.jsx","../assets/Graph.scss":"assets/Graph.scss"}],"assets/App.scss":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","../hooks/useDnD":"hooks/useDnD.js","./Node":"components/Node.jsx","../assets/Graph.scss":"assets/Graph.scss"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+var bundleURL = null;
+
+function getBundleURLCached() {
+  if (!bundleURL) {
+    bundleURL = getBundleURL();
+  }
+
+  return bundleURL;
+}
+
+function getBundleURL() {
+  // Attempt to find the URL of the current script and use that as the base URL
+  try {
+    throw new Error();
+  } catch (err) {
+    var matches = ('' + err.stack).match(/(https?|file|ftp|chrome-extension|moz-extension):\/\/[^)\n]+/g);
+
+    if (matches) {
+      return getBaseURL(matches[0]);
+    }
+  }
+
+  return '/';
+}
+
+function getBaseURL(url) {
+  return ('' + url).replace(/^((?:https?|file|ftp|chrome-extension|moz-extension):\/\/.+)\/[^/]+$/, '$1') + '/';
+}
+
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+},{}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/css-loader.js":[function(require,module,exports) {
+var bundle = require('./bundle-url');
+
+function updateLink(link) {
+  var newLink = link.cloneNode();
+
+  newLink.onload = function () {
+    link.remove();
+  };
+
+  newLink.href = link.href.split('?')[0] + '?' + Date.now();
+  link.parentNode.insertBefore(newLink, link.nextSibling);
+}
+
+var cssTimeout = null;
+
+function reloadCSS() {
+  if (cssTimeout) {
+    return;
+  }
+
+  cssTimeout = setTimeout(function () {
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+
+    for (var i = 0; i < links.length; i++) {
+      if (bundle.getBaseURL(links[i].href) === bundle.getBundleURL()) {
+        updateLink(links[i]);
+      }
+    }
+
+    cssTimeout = null;
+  }, 50);
+}
+
+module.exports = reloadCSS;
+},{"./bundle-url":"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"assets/App.scss":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -34749,17 +34877,12 @@ var fakeConnectable = [{
 
 var App = function App() {
   return _react.default.createElement("div", null, _react.default.createElement("div", {
-    style: {
-      height: 80,
-      backgroundColor: 'tomato'
-    }
-  }), _react.default.createElement("div", {
     className: "App"
-  }, _react.default.createElement(_LeftList.default, null), _react.default.createElement("div", {
+  }, _react.default.createElement("div", {
     className: "MainContainer"
   }, _react.default.createElement(_GraphNavigator.default, {
     connectables: _connectables.default.connectables
-  }), _react.default.createElement(_BottomList.default, null))));
+  }))));
 };
 
 _reactDom.default.render(_react.default.createElement(App, null), document.querySelector('#root'));
@@ -34791,7 +34914,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49406" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59132" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
