@@ -551,6 +551,7 @@ export default class DragNDrop {
   handleDragEvent(event) {}
 
   handleDragEnterEvent(event) {
+    event.dataTransfer.setDragImage(this.dragImagePlaceholder, 0, 0);
     /*  const node = this.checkIsNode(event.target);
     console.log('drag enter', node);
     /* if ( && event.target !== this.dragged) {
@@ -593,6 +594,7 @@ export default class DragNDrop {
 
   handleDropEvent(ev) {
     ev.preventDefault();
+    console.log(ev);
     if (this.draggedCopy !== null) {
       this.el.removeChild(this.draggedCopy);
       this.draggedCopy = null;
