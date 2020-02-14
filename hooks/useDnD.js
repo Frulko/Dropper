@@ -1,5 +1,5 @@
-import React, {
-  useRef, useEffect, createRef, useState,
+import {
+  useRef, useEffect,
 } from 'react';
 import DragNDrop from '../utils/DragNDrop';
 
@@ -17,8 +17,6 @@ export default ({
   onScaleFactor,
 }) => {
   const xy = getTranslatationFromScaleFactor(boardOrigin, scaleFactor);
-
-  // const [ _xy, _setPosition ] = useState([posX, posY]);
   const bind = {
     ref: useRef(null),
   };
@@ -28,115 +26,71 @@ export default ({
   };
 
   const setPosition = (pos) => {
-    // _setPosition(pos);
-    // xy = pos;
-    // boardBind.ref.current.style.transform = `translate3d(${pos[0]}px, ${pos[1]}px, 0) scale(${scaleFactor})`;
   };
 
   let dragNDropInstance = null;
   let isShifted = false;
 
   const onScaleHandler = ({ scale, origin }) => {
-    // console.log('scale', p)
-    // boardBind.ref.current.style.transform = `translate3d(${origin[0]}px, ${origin[1]}px, 0) scale(${scale})`;
+    console.log('onScale', scale, origin);
   };
 
   const onDragHandler = (evt) => {
     if (evt.first) {
-      // console.log('first');
-      if (isShifted && evt.node) {
-        console.log('add', evt.target);
-      }
+      // mousedown
     }
 
     if (evt.moving) {
-      const [deltaX, deltaY] = evt.delta;
-      const [x, y] = xy;
-
-      const pos = [
-        x + deltaX,
-        y + deltaY,
-      ];
-
-
-      setPosition(pos);
-      dragNDropInstance.setOrigin(pos);
+      console.log('move');
     }
 
     if (evt.last) {
-      // console.log(evt.native.target, id, );
-
       console.log(evt.selection, evt.unselection);
-
-      if (evt.node) {
-        const id = evt.target.getAttribute('data-node');
-        console.log(id, evt.pos);
-        // items[id].posX = evt.pos[0];
-        // items[id].posY = evt.pos[1];
-        // // console.log('|->>>', evt.pos, [plop[id].posX, plop[id].posY], evt.newPosition);
-        // items[id].ref.current.external_onClickEvent();
-        onUpdateNodePosition(items[id].arrayIndex, evt.pos);
-
-        const triggerSelectionEvent = (node, isSelected) => {
-          const id = node.getAttribute('data-node');
-          const el = items[id].ref.current;
-
-          if (isSelected) {
-            el.external_onClickEvent();
-            return;
-          }
-
-          el.external_onUnselectedEvent();
-        };
-
-        for (const selectedIndex in evt.selection) {
-          triggerSelectionEvent(evt.selection[selectedIndex], true);
-        }
-
-        for (const unSelectedIndex in evt.unselection) {
-          triggerSelectionEvent(evt.unselection[unSelectedIndex], false);
-        }
-      } else {
-
-        // onUpdateBoardOrigin(xy);
-
-        // for (let i = 0, l = evt.selection.length; i < l; i++) {
-        //   const id =  evt.selection[i].getAttribute('data-node');
-        //   items[id].ref.current.external_onUnselectedEvent();
-        // }
-      }
-      // plop[id].ref.current.external_update_state_function('click')
     }
 
     if (!evt.first && !evt.last) {
-      //  // console.log(event.x, draggedClickPositionOffset[0]);
-      // const posX = getPosByScale(event.x - draggedClickPositionOffset[0], );
-      // const posY = getPosByScale(event.y - draggedClickPositionOffset[1], );
-      // dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
+      // between first & last --> move
     }
   };
 
 
   const onKeyEventHandler = (state, evt) => {
     // console.log(evt.keyCode);
+    const dndInstance = bind.ref.current.dragNDropInstance;
     if (state !== 'down') {
       isShifted = false;
-      bind.ref.current.dragNDropInstance.setDraggingBoard(false);
+      dndInstance.setDraggingBoard(false);
+      return;
+    }
+
+    if (evt.ctrlKey) { // prevent when ctrl is pressed
       return;
     }
 
     if (evt.keyCode === 16) {
-      bind.ref.current.dragNDropInstance.setDraggingBoard(true);
+      dndInstance.setDraggingBoard(true);
       isShifted = true;
     }
 
 
-    if (evt.keyCode === 82 && state === 'down') {
-      bind.ref.current.dragNDropInstance.reset();
+    if (evt.keyCode === 82 && state === 'down') { // r -> reset
+      dndInstance.reset();
     }
 
-    if (evt.keyCode === 70 && state === 'down') {
-      bind.ref.current.dragNDropInstance.fitToScreen();
+    if (evt.keyCode === 70 && state === 'down') { // f -> fit to screen
+      dndInstance.fitToScreen();
+    }
+
+    if (evt.keyCode === 65 && state === 'down') { // a -> scale to 0.5
+      dndInstance.setScale(0.5);
+    }
+
+    if (evt.keyCode === 90 && state === 'down') { // z -> scale to 1
+      dndInstance.setScale(1);
+    }
+
+    if (evt.keyCode === 69 && state === 'down') { // e -> scale to 2
+      dndInstance.setScale(2);
     }
   };
 
@@ -156,10 +110,8 @@ export default ({
       });
     }
 
+    // maybe need to be improve
     dragNDropInstance = bind.ref.current.dragNDropInstance;
-
-    boardBind.ref.current.style.transformOrigin = '0 0';
-    // boardBind.ref.current.style.transform = `translate3d(${xy[0]}px, ${xy[1]}px, 0) scale(${scaleFactor})`;
 
     dragNDropInstance.setContainer(bind.ref.current);
     dragNDropInstance.onDrag(onDragHandler.bind(this));
