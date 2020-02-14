@@ -76,6 +76,8 @@ export default class DragNDrop {
     this.onKeyHandler = (type, evt) => {
       this.shiftKeyPressed = type === 'down' && evt.shiftKey;
       this.ctrlKeyPressed = type === 'down' && evt.ctrlKey;
+
+      this.draggingBoard = !this.shiftKeyPressed;
     };
 
     this.update();
@@ -383,14 +385,19 @@ export default class DragNDrop {
       this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
       this.selectionAreaBox.y = evtY;
       this.selectionAreaBox.initialized = true;
-      this.unselectedNodes = [...this.selectedNodes];
+
+      if (!this.shiftKeyPressed) {
+        this.unselectedNodes = [...this.selectedNodes];
+      }
+
+
       // this.renderSelectionAreaBox();
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
     }
 
 
     // console.log('here cleanup', this.shiftKeyPressed, nodeElement);
-    if (!this.shiftKeyPressed && !nodeElement) {
+    if (!this.shiftKeyPressed && !nodeElement && !this.draggingBoard) {
       this.unselectedNodes = [...this.selectedNodes];
       this.selectedNodes = [];
     }
@@ -400,6 +407,7 @@ export default class DragNDrop {
 
     this.onStart(); // used for scaling --> refactoring to delete it
     // this.onDragHandler.call(this, evt); // dispatch to the down click event
+    this.displaySelection();
   }
 
   handleMouseUp(event) {
@@ -430,26 +438,9 @@ export default class DragNDrop {
 
     //
     const hasMoved = this.posFirst[0] !== evtX || this.posFirst[1] !== evtY;
-    /*  if (this.isNode && !hasMoved) {
-      const selectionIndex = this.selectedNodes.indexOf(this.dragged);
-      const isNotInSelection = selectionIndex === -1;
 
-      if (isNotInSelection) {
-        if (this.shiftKeyPressed) {
-          this.selectedNodes.push(this.dragged);
-        } else {
-          this.unselectedNodes = [...this.selectedNodes];
-          this.selectedNodes = [this.dragged];
-        }
-      } else {
-        this.unselectedNodes.push(this.selectedNodes[selectionIndex]);
-        this.selectedNodes.splice(selectionIndex, 1);
-      }
-    } */
-
-    if (!this.isNode) {
-      // this.unselectedNodes = this.selectedNodes;
-      // this.selectedNodes = [];
+    if (this.isNode && !hasMoved) {
+      console.log('trigger click');
     }
 
     // console.log([this.selectionAreaBox.x, event.x], [this.selectionAreaBox.y, event.y])
@@ -461,7 +452,7 @@ export default class DragNDrop {
       this.resetSelectionBoxArea();
     }
 
-    if (selectionIsAtSamePosition) {
+    if (selectionIsAtSamePosition && !this.draggingBoard) {
       this.unselectedNodes = [...this.selectedNodes];
       this.selectedNodes = [];
     }
@@ -492,8 +483,6 @@ export default class DragNDrop {
       if (!this.draggingBoard && (x !== endX && y !== endY)) {
         this.showSelectionBox();
         // if same pos do nothing
-        // const rectPos = positionningRect2Dom([x, y], [endX, endY]);
-        // this.selectionAreaBox = { ...rectPos };
         this.selectionAreaBox.endx = evtX;
         this.selectionAreaBox.endy = evtY;
         this.renderSelectionAreaBox();
@@ -509,22 +498,6 @@ export default class DragNDrop {
       return;
     }
 
-    // if (this.isNode) {
-    //   return;
-    // }
-
-    // console.log(this.getDeltaPosition(event.x, event.y))
-
-    // const evt = this.updateEventObject(
-    //   {
-    //     moving: true,
-    //     delta: this.getDeltaPosition(event.x, event.y)
-    //   },
-    //   event
-    // );
-    // this.posFirst = [event.x, event.y];
-    // this.onDragHandler.call(this, evt);
-
     if (this.draggingBoard) {
       const d = this.getDeltaPosition(evtX, evtY);
       this.onTranslate(d[0], d[1]);
@@ -532,8 +505,6 @@ export default class DragNDrop {
   }
 
   handleDragStartEvent(event) {
-    // this.dragged = event.target;
-
     const node = this.checkIsNode(event.target);
     if (!node) {
       return;
@@ -564,25 +535,6 @@ export default class DragNDrop {
   handleDropEvent(ev) {
     ev.preventDefault();
     // var data = event.dataTransfer.getData("text/plain");
-    const { items } = ev.dataTransfer;
-
-    if (ev.dataTransfer.items) {
-      // Use DataTransferItemList interface to access the file(s)
-      for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-        // If dropped items aren't files, reject them
-        if (ev.dataTransfer.items[i].kind === 'file') {
-          const file = ev.dataTransfer.items[i].getAsFile();
-          console.log(`... file[${i}].name = ${file.name}`);
-        }
-      }
-    } else {
-      // Use DataTransfer interface to access the file(s)
-      for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-        console.log(
-          `... file[${i}].name = ${ev.dataTransfer.files[i].name}`,
-        );
-      }
-    }
   }
 
   getPosFromEvent(x, y) {
@@ -600,22 +552,25 @@ export default class DragNDrop {
     const oldPosY = +this.dragged.getAttribute('data-y');
 
     const [deltaX, deltaY] = [posX - oldPosX, posY - oldPosY];
-    // console.log('d', [posX - oldPosX, posY - oldPosY]);
 
     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       const dragged = this.selectedNodes[i];
-      const oldDraggedPosX = +dragged.getAttribute('data-x');
-      const oldDraggedPosY = +dragged.getAttribute('data-y');
-      const nPosX = oldDraggedPosX + deltaX;
-      const nPosY = oldDraggedPosY + deltaY;
 
-      dragged.setAttribute('data-x', nPosX); // need to be update because selection might be not working (calculate on old values)
-      dragged.setAttribute('data-y', nPosY);
-      dragged.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
+      if (dragged !== this.dragged) {
+        const oldDraggedPosX = +dragged.getAttribute('data-x');
+        const oldDraggedPosY = +dragged.getAttribute('data-y');
+        const nPosX = oldDraggedPosX + deltaX;
+        const nPosY = oldDraggedPosY + deltaY;
+        // need to be update because selection might be not working (calculate on old values)
+        dragged.setAttribute('data-x', nPosX);
+        dragged.setAttribute('data-y', nPosY);
+        dragged.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
+      }
     }
 
     // update node
-    this.dragged.setAttribute('data-x', posX); // need to be update because selection might be not working (calculate on old values)
+    // need to be update because selection might be not working (calculate on old values)
+    this.dragged.setAttribute('data-x', posX);
     this.dragged.setAttribute('data-y', posY);
     this.dragged.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
   }
@@ -746,6 +701,7 @@ export default class DragNDrop {
       return;
     }
 
+    // TODO : when shift is pressed do a merge not a reset of selection array
     this.selectedNodes = [...selection];
 
     this.previousSelectionLength = selection.length;
@@ -791,7 +747,8 @@ export default class DragNDrop {
       positionningRect2Dom(start, end),
     );
 
-    // TODO do not do this !!! // check at start selection and use dom selection after
+    // TODO: do not do this -- need an update
+    // Check at start selection and use dom selection after
     const els = this.container.querySelectorAll('[draggable="true"]');
 
     const selection = [];
@@ -819,7 +776,6 @@ export default class DragNDrop {
       }
     }
 
-    // console.log([x, y, width, height], selection.length);
     return selection;
   }
 
@@ -829,19 +785,15 @@ export default class DragNDrop {
     width = 0,
     height = 0,
   }) {
-    x = getValueByScale(x - this.transform.x, this.transform.k);
-    y = getValueByScale(y - this.transform.y, this.transform.k);
-    width *= (1 / this.transform.k);
-    height *= (1 / this.transform.k);
-
     return {
-      x,
-      y,
-      width,
-      height,
+      x: getValueByScale(x - this.transform.x, this.transform.k),
+      y: getValueByScale(y - this.transform.y, this.transform.k),
+      width: width * (1 / this.transform.k),
+      height: height * (1 / this.transform.k),
     };
   }
 
+  // TODO futur update
   updateQuadTree() {
     // clear() and populate insert()
     // see if reference work and then update only the changed
@@ -856,11 +808,9 @@ export default class DragNDrop {
     }
 
     for (let i = 0, l = this.unselectedNodes.length; i < l; i += 1) {
-      if (this.selectedNodes.indexOf(this.unselectedNodes[i]) !== -1) {
-        continue;
+      if (this.selectedNodes.indexOf(this.unselectedNodes[i]) === -1) {
+        this.unselectedNodes[i].classList.remove('activate');
       }
-
-      this.unselectedNodes[i].classList.remove('activate');
     }
   }
 }
