@@ -50,7 +50,7 @@ export default class DragNDrop {
     this.selectedNodes = [];
     this.unselectedNodes = [];
 
-    this.draggingBoard = true;
+    this.draggingBoard = false;
 
     this.containerOffset = {
       x: 0,
@@ -73,11 +73,14 @@ export default class DragNDrop {
 
     this.dragImagePlaceholder = img;
 
+    this.customKeyHandler = () => {};
     this.onKeyHandler = (type, evt) => {
       this.shiftKeyPressed = type === 'down' && evt.shiftKey;
       this.ctrlKeyPressed = type === 'down' && evt.ctrlKey;
 
-      this.draggingBoard = !this.shiftKeyPressed;
+      // this.draggingBoard = !this.shiftKeyPressed;
+
+      this.customKeyHandler.apply(this, [type, evt]);
     };
 
     this.update();
@@ -136,7 +139,7 @@ export default class DragNDrop {
   }
 
   onKeyEvent(handler) {
-    // this.onKeyHandler = handler;
+    this.customKeyHandler = handler;
   }
 
   initEventListeners() {
@@ -252,7 +255,7 @@ export default class DragNDrop {
 
   handleMouseWheel(e) {
     e.preventDefault();
-    if (!this.draggingBoard) {
+    if (this.draggingBoard) {
       // if normal gesture move
       this._startPosition = { ...this.transform };
       this.onTranslate(e.deltaX, e.deltaY); // invert delta for natural scroll behavior
@@ -397,7 +400,7 @@ export default class DragNDrop {
 
 
     // console.log('here cleanup', this.shiftKeyPressed, nodeElement);
-    if (!this.shiftKeyPressed && !nodeElement && !this.draggingBoard) {
+    if (!this.shiftKeyPressed && !nodeElement) {
       this.unselectedNodes = [...this.selectedNodes];
       this.selectedNodes = [];
     }
@@ -420,7 +423,9 @@ export default class DragNDrop {
     const delta = this.getDeltaPosition(evtX, evtY);
     const evt = this.updateEventObject(
       {
-        target: this.isNode || event.target, // if not a node === null so we set the event.target if null;
+        // if not a node === null so we set the event.target if null;
+        target: this.isNode || event.target,
+
         last: true,
         delta,
         node: this.isNode, // if not a node so just return null
@@ -430,8 +435,8 @@ export default class DragNDrop {
           ((this.originalPosition[1] - this.origin[1] + delta[1]) * 1)
             / this.scaleFactor,
         ],
-        // selection: [...this.selectedNodes],
-        // unselection: [...this.unselectedNodes]
+        selection: [...this.selectedNodes],
+        unselection: [...this.unselectedNodes],
       },
       event,
     );
@@ -458,11 +463,13 @@ export default class DragNDrop {
     }
 
     this.displaySelection();
-
     this.posFirst = [0, 0];
-    this.onDragHandler.call(this, evt);
     this.dragged = null;
+
+    // check this -- maybe buggy w/ draggingboard & shiftkey behavior
     this.previousSelectionLength = -1;
+
+    this.onDragHandler.call(this, evt);
   }
 
   handleMouseMove(event) {
