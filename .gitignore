@@ -40,3 +40,5 @@ src/i18n/messages/src/containers/
 
 .cache
 dist
+
+.parcel-cache

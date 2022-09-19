@@ -199,7 +199,7 @@ export default class DragNDrop {
     );
     this.container.addEventListener(
       "mouseup",
-      this.handleMouseUp.bind(this),
+      this.handleMouseNativeUp.bind(this),
       false
     );
     this.container.addEventListener(
@@ -244,11 +244,11 @@ export default class DragNDrop {
       this.handleMouseDown.bind(this),
       false
     );
-    this.container.removeEventListener(
-      "mouseup",
-      this.handleMouseUp.bind(this),
-      false
-    );
+    // this.container.removeEventListener(
+    //   "mouseup",
+    //   this.handleMouseUp.bind(this),
+    //   false
+    // );
     this.container.removeEventListener(
       "mousemove",
       this.handleDragStartEvent.bind(this),
@@ -341,6 +341,9 @@ export default class DragNDrop {
     const t = this.transform;
     // update board
     this.el.style.transform = `translate3d(${t.x}px, ${t.y}px, 0) scale(${t.k})`;
+    // document.querySelector('.background').style.backgroundPositionX = `${t.x}px`;
+    // document.querySelector('.background').style.backgroundPositionY = `${t.y}px`;
+    // document.querySelector('.background').style.backgroundSize = `${20 * t.k}px ${20 * t.k}px`;
   }
 
   handleMouseDown(event) {
@@ -409,7 +412,8 @@ export default class DragNDrop {
             this.scaleFactor,
           ((this.originalPosition[1] - this.origin[1] + delta[1]) * 1) /
             this.scaleFactor
-        ]
+        ],
+        transform: this.transform
         // selection: [...this.selectedNodes],
         // unselection: [...this.unselectedNodes]
       },
@@ -456,11 +460,33 @@ export default class DragNDrop {
 
     this.displaySelection();
 
+    console.log('--> drag emit', this.isNode)
     this.posFirst = [0, 0];
     this.onDragHandler.call(this, evt);
     this.dragged = null;
     this.previousSelectionLength = -1;
   }
+
+  handleMouseNativeUp(event) {
+    return;
+
+    const nodeElement = this.checkIsNode(event.target);
+    console.log('-->', nodeElement, this.isNode)
+    const evt = this.updateEventObject(
+      {
+        target: this.isNode || event.target, // if not a node === null so we set the event.target if null;
+        last: true,
+        node: nodeElement, // if not a node so just return null
+        pos: [
+          
+        ]
+        // selection: [...this.selectedNodes],
+        // unselection: [...this.unselectedNodes]
+      },
+      event
+    );
+    this.onDragHandler.call(this, evt);
+  } 
 
   handleMouseMove(event) {
     // TODO handle the case of you drag and move outside the view (today: still moving while mouse is up, futur: cancel all action)
@@ -524,6 +550,7 @@ export default class DragNDrop {
     // event.target.style.pointerEvents = "none";
     this.container.classList.add('draggin');
     const node = this.checkIsNode(event.target);
+    console.log('-node');
     if (!node) {
       return;
     }
@@ -598,7 +625,7 @@ export default class DragNDrop {
 
   handleDropEvent(ev) {
     ev.preventDefault();
-    console.log(ev);
+    // console.log(ev);
     if (this.draggedCopy !== null) {
       this.el.removeChild(this.draggedCopy);
       this.draggedCopy = null;
@@ -666,10 +693,21 @@ export default class DragNDrop {
       dragged.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
     } */
 
+    // console.log(this.draggedCopy)
+
+    if (!this.draggedCopy) { //phantom one
+      return;
+    }
+
+    // const nPosX = (posX + this.transform.x) * (1/this.transform.k);
+    // const nPosY = (posY + this.transform.y) * (1/this.transform.k);
+    const nPosX = posX;
+    const nPosY = posY;
+
     // update node
-    this.draggedCopy.setAttribute("data-x", posX); // need to be update because selection might be not working (calculate on old values)
-    this.draggedCopy.setAttribute("data-y", posY);
-    this.draggedCopy.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
+    this.draggedCopy.setAttribute("data-x", nPosX); // need to be update because selection might be not working (calculate on old values)
+    this.draggedCopy.setAttribute("data-y", nPosY);
+    this.draggedCopy.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
   }
 
   getPosition(x, y) {
@@ -777,6 +815,7 @@ export default class DragNDrop {
   }
 
   renderSelectionAreaBox() {
+    return;
     /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
 
     if (this.selectionAreaEl === null) {

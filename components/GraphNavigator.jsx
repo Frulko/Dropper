@@ -26,14 +26,14 @@ const GraphNavigator = (props) => {
     boardOrigin,
     scaleFactor,
     items: indexedConnectables,
-    onUpdateNodePosition: (index, [x, y]) => {
+    onUpdateNodePosition: (index, [x, y], transform) => {
       
-      // const newCon = [...connectables]; 
-      // newCon[index].posX = x;
-      // newCon[index].posY = y;
+      const newCon = [...connectables]; 
+      newCon[index].posX = (x - transform.x) * (1/transform.k);
+      newCon[index].posY = (y - transform.y) * (1/transform.k);
 
-      // console.log('>', newCon[index], index, [x, y])
-      // setConnectables(newCon);
+      console.log('>', index, [x, y], transform)
+      setConnectables(newCon);
     },
     onUpdateBoardOrigin: (position) => {
       // console.log('onUpdateBoardOrigin', position);
