@@ -76,8 +76,8 @@ export default ({
         // items[id].posX = evt.pos[0];
         // items[id].posY = evt.pos[1];
         // // console.log('|->>>', evt.pos, [plop[id].posX, plop[id].posY], evt.newPosition);
-        /* items[id].ref.current.external_onClickEvent();
-        onUpdateNodePosition(items[id].arrayIndex, evt.pos);
+        items[id].ref.current.external_onClickEvent();
+        onUpdateNodePosition(items[id].arrayIndex, evt.pos, bind.ref.current.dragNDropInstance.transform);
 
         const triggerSelectionEvent = (node, isSelected) => {
           const id = node.getAttribute('data-node');
@@ -97,7 +97,7 @@ export default ({
 
         for(let unSelectedIndex in evt.unselection) {
           triggerSelectionEvent(evt.unselection[unSelectedIndex], false);
-        } */
+        } 
         
       } else {
         
