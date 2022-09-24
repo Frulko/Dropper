@@ -39,6 +39,8 @@ export default class DragNDrop {
       initialized: false
     };
 
+    this.onBoardTransformHandler = () => {}
+
     this._startPosition = null;
 
     this.mouseDown = false;
@@ -135,6 +137,10 @@ export default class DragNDrop {
 
   onScale(handler) {
     this.onScaleHandler = handler;
+  }
+
+  onBoardTransform(handler) {
+    this.onBoardTransformHandler = handler;
   }
 
   onKeyEvent(handler) {
@@ -267,7 +273,7 @@ export default class DragNDrop {
     if (!e.shiftKey) {
       //if normal gesture move
       this._startPosition = { ...this.transform };
-      this.onTranslate(e.deltaX, e.deltaY); // invert delta for natural scroll behavior
+      this.onTranslate(-e.deltaX, -e.deltaY); // invert delta for natural scroll behavior
       return;
     }
 
@@ -341,6 +347,7 @@ export default class DragNDrop {
     const t = this.transform;
     // update board
     this.el.style.transform = `translate3d(${t.x}px, ${t.y}px, 0) scale(${t.k})`;
+    this.onBoardTransformHandler(t);
   }
 
   handleMouseDown(event) {
@@ -361,6 +368,8 @@ export default class DragNDrop {
 
     const nodeElement = this.checkIsNode(event.target);
     if (nodeElement) {
+      console.log('--has node')
+      
       // this.selectedNodes.push(nodeElement);
       this.dragged = nodeElement;
       const draggedRect = this.dragged.getBoundingClientRect();
@@ -374,6 +383,7 @@ export default class DragNDrop {
       this.updateDOMTranslate(event);
       // this.selectionAreaBox.initialized = false;
     } else {
+      console.log('--has not node')
       /* SELECTION BEHAVIOR PUT THIS INTO A CLASS */
       // if selection --> setting up xy pos,
       this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
@@ -460,6 +470,12 @@ export default class DragNDrop {
     this.onDragHandler.call(this, evt);
     this.dragged = null;
     this.previousSelectionLength = -1;
+
+
+    this.selectionAreaBox.x = evtX; // take event.x + box offset of container pos
+      this.selectionAreaBox.y = evtY;
+      this.selectionAreaBox.initialized = true;
+      this.unselectedNodes = [...this.selectedNodes];
   }
 
   handleMouseMove(event) {
@@ -529,7 +545,8 @@ export default class DragNDrop {
     }
 
     if (this.selectedNodes.indexOf(node) === -1) {
-      this.selectedNodes.push(node);
+      // this.selectedNodes.push(node);
+      this.selectedNodes = [node];
     }
 
     this.isDragging = true;
@@ -654,7 +671,7 @@ export default class DragNDrop {
     const [deltaX, deltaY] = [posX - oldPosX, posY - oldPosY];
     // console.log('d', [posX - oldPosX, posY - oldPosY]);
 
-    /* for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
+     for (let i = 0, l = this.selectedNodes.length; i < l; i += 1) {
       const dragged = this.selectedNodes[i];
       const oldDraggedPosX = +dragged.getAttribute("data-x");
       const oldDraggedPosY = +dragged.getAttribute("data-y");
@@ -664,12 +681,12 @@ export default class DragNDrop {
       dragged.setAttribute("data-x", nPosX); // need to be update because selection might be not working (calculate on old values)
       dragged.setAttribute("data-y", nPosY);
       dragged.style.transform = `translate3d(${nPosX}px, ${nPosY}px, 0px)`;
-    } */
+    } 
 
     // update node
-    this.draggedCopy.setAttribute("data-x", posX); // need to be update because selection might be not working (calculate on old values)
-    this.draggedCopy.setAttribute("data-y", posY);
-    this.draggedCopy.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
+    // this.draggedCopy.setAttribute("data-x", posX); // need to be update because selection might be not working (calculate on old values)
+    // this.draggedCopy.setAttribute("data-y", posY);
+    // this.draggedCopy.style.transform = `translate3d(${posX}px, ${posY}px, 0px)`;
   }
 
   getPosition(x, y) {

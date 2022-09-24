@@ -6,6 +6,19 @@
   height: 100%;
   user-select: none;
 
+  &__background{
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background-color: #e5e5f7;
+    opacity: 0.4;
+    background-image: radial-gradient(#14164a 0.5px, #e5e5f7 0.5px);
+    background-size: 10px 10px;
+    width: 100%;
+    height: 100%;
+  }
+
  
   // Just to test without background : background-color: rgba(255, 255, 255, 0.8);
   & *:not(input textarea){
@@ -28,17 +41,33 @@
 }
 
 .node {
-  width: 7.5rem;
-  padding: 10px;
-  height: 100px;
-  text-align: center;
-  background: white;
-  border: 2px solid #aaa;
-  border-radius: 4px;
+  // width: 32px;
+  // height: 32px;
+  // border-radius: 32px;
+  // padding: 10px;
+  // height: 100px;
+  // text-align: center;
+  width: 1px;
+  height: 1px;
+  // border: 2px solid #aaa;
+  // border-radius: 4px;
+  pointer-events: none;
   position: absolute;
   top: 0;
   left: 0;
   z-index: 1;
+
+  &:after{
+    content: '';
+    width: 32px;
+    height: 32px;
+    display: block;
+    transform: translate(-16px, -16px);
+    border-radius: 32px;
+    background: white;
+    border: 2px solid #aaa;
+    pointer-events: all;
+  }
 
   // &::before{
   //   content: '';
